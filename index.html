@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AquaSense — ระบบเฝ้าระวังคุณภาพน้ำ</title>
+<title>ระบบเฝ้าระวังคุณภาพน้ำ</title>
 
-<!-- ฟอนต์ไทย: Anuphan (หัวข้อ/ตัวเลข) + IBM Plex Sans Thai (เนื้อหา/ตาราง) -->
+<!-- ฟอนต์สำรอง (เผื่อไฟล์ .ttf ยังไม่ถูกอัปโหลด) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
 
 <!-- Firebase (compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -17,6 +17,18 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <style>
+/* ===== ฟอนต์ SF Thonburi (วางไฟล์ .ttf ไว้โฟลเดอร์เดียวกับหน้านี้) ===== */
+@font-face{
+  font-family:"SF Thonburi";
+  src:url("SF_Thonburi.ttf") format("truetype");
+  font-weight:400; font-style:normal; font-display:swap;
+}
+@font-face{
+  font-family:"SF Thonburi";
+  src:url("SF_Thonburi_Bold.ttf") format("truetype");
+  font-weight:700; font-style:normal; font-display:swap;
+}
+
 :root{
   --bg-1:#e9edfb; --bg-2:#e6f1f8; --bg-3:#e3f4f1;
   --glass:rgba(255,255,255,.55);
@@ -28,11 +40,12 @@
   --shadow:0 14px 34px -16px rgba(31,45,80,.35);
   --shadow-sm:0 6px 18px -10px rgba(31,45,80,.3);
   --r:20px;
+  --font:"SF Thonburi","IBM Plex Sans Thai",sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
-  font-family:"IBM Plex Sans Thai","Anuphan",sans-serif;
+  font-family:var(--font);
   color:var(--ink);
   background:
     radial-gradient(1100px 600px at 12% -8%, #f2f5ff 0%, transparent 55%),
@@ -41,7 +54,7 @@ body{
   background-attachment:fixed;
   min-height:100vh;
 }
-h1,h2,h3,.num{font-family:"Anuphan",sans-serif}
+h1,h2,h3{font-family:var(--font)}
 button{font-family:inherit;cursor:pointer}
 
 /* ---------- โครงหน้า ---------- */
@@ -54,16 +67,16 @@ button{font-family:inherit;cursor:pointer}
   border:1px solid var(--stroke);border-radius:24px;box-shadow:var(--shadow);
   display:flex;flex-direction:column;gap:6px;position:sticky;top:16px;height:calc(100vh - 32px);
 }
-.brand{display:flex;align-items:center;gap:11px;padding:8px 8px 18px}
+.brand{display:flex;align-items:center;gap:11px;padding:8px 6px 18px}
 .brand .logo{
-  width:42px;height:42px;border-radius:13px;flex:none;overflow:hidden;
+  width:46px;height:46px;border-radius:13px;flex:none;overflow:hidden;
   display:grid;place-items:center;color:#fff;
   background:linear-gradient(140deg,var(--accent1),var(--accent2));
   box-shadow:0 8px 18px -6px rgba(79,116,255,.55);
 }
-.brand .logo img{width:100%;height:100%;object-fit:cover;display:none}
-.brand .name{font-family:"Anuphan";font-weight:700;font-size:18px;line-height:1.05}
-.brand .tag{font-size:11px;color:var(--muted)}
+.brand .logo.has-img{background:#fff;padding:2px;box-shadow:0 6px 16px -8px rgba(31,45,80,.4)}
+.brand .logo img{width:100%;height:100%;object-fit:contain;display:none}
+.brand .name{font-weight:700;font-size:15.5px;line-height:1.18}
 .nav{display:flex;flex-direction:column;gap:4px;margin-top:4px}
 .nav-item{
   display:flex;align-items:center;gap:12px;width:100%;text-align:left;
@@ -91,60 +104,40 @@ button{font-family:inherit;cursor:pointer}
   font-size:13px;color:var(--muted);font-weight:500;
 }
 
-/* ---------- Hero ---------- */
+/* ---------- Hero (รวมค่าตรวจวัดเรียลไทม์) ---------- */
 .hero{
-  position:relative;overflow:hidden;border-radius:26px;padding:26px 28px;margin-bottom:20px;
+  position:relative;overflow:hidden;border-radius:26px;padding:24px 26px;margin-bottom:22px;
   color:#fff;isolation:isolate;
   background:linear-gradient(135deg,#3aa0f0 0%,#4f74ff 48%,#7367f0 100%);
-  box-shadow:0 22px 48px -22px rgba(79,90,220,.75);min-height:220px;
+  box-shadow:0 22px 48px -22px rgba(79,90,220,.75);
 }
 .hero::before{content:"";position:absolute;inset:0;background:
   radial-gradient(420px 220px at 88% -20%, rgba(255,255,255,.35), transparent 60%);z-index:-1}
-.hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;position:relative;z-index:3}
-.hero-label{font-size:13px;opacity:.9;font-weight:500;letter-spacing:.3px}
-.hero-status{font-family:"Anuphan";font-weight:700;font-size:40px;line-height:1.1;margin-top:4px}
-.hero-sub{font-size:13.5px;opacity:.92;margin-top:4px;max-width:360px}
-.hero-level{text-align:right;flex:none}
-.hero-level-num{font-family:"Anuphan";font-weight:700;font-size:38px;line-height:1}
-.hero-level-cap{font-size:12.5px;opacity:.9;margin-top:2px}
-.hero-chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px;position:relative;z-index:3}
-.hero-chip{
-  background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);
-  padding:9px 14px;border-radius:14px;backdrop-filter:blur(6px);
-}
-.hero-chip .k{font-size:11.5px;opacity:.88}
-.hero-chip .v{font-family:"Anuphan";font-weight:600;font-size:19px;margin-top:1px}
-/* คลื่นน้ำ = ระดับน้ำจริง */
-.wave-wrap{position:absolute;left:0;right:0;bottom:0;height:0%;z-index:1;transition:height .9s cubic-bezier(.4,0,.2,1);
-  background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.16))}
+.hero-label{font-size:13px;opacity:.9;font-weight:500;letter-spacing:.3px;position:relative;z-index:3}
+.hero-status{font-weight:700;font-size:38px;line-height:1.1;margin-top:4px;position:relative;z-index:3}
+.hero-sub{font-size:13.5px;opacity:.92;margin-top:4px;max-width:520px;position:relative;z-index:3}
+
+.hero-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px;position:relative;z-index:3}
+.hm{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);
+  border-radius:16px;padding:13px 15px;backdrop-filter:blur(6px)}
+.hm-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.hm-label{font-size:12.5px;opacity:.92}
+.hm-badge{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.hm-badge.ok{background:rgba(255,255,255,.92);color:#059669}
+.hm-badge.warn{background:rgba(255,255,255,.94);color:#dc2626}
+.hm-val{font-weight:700;font-size:26px;margin-top:8px;letter-spacing:.3px}
+.hm-val small{font-size:13px;font-weight:400;opacity:.85;margin-left:3px}
+.hm-spark{position:relative;height:30px;margin-top:4px}
+
+/* คลื่นน้ำ = ระดับน้ำจริง (อยู่ด้านหลังการ์ด) */
+.wave-wrap{position:absolute;left:0;right:0;bottom:0;height:0%;z-index:0;transition:height .9s cubic-bezier(.4,0,.2,1);
+  background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.15))}
 .wave-wrap svg{position:absolute;top:-14px;left:0;width:200%;height:26px}
 .wave-wrap .w1{animation:wave 7s linear infinite;opacity:.5}
 .wave-wrap .w2{animation:wave 11s linear infinite reverse;opacity:.35}
 @keyframes wave{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-/* ---------- การ์ดค่าตรวจวัด ---------- */
-.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
-.metric{
-  background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  border:1px solid var(--stroke);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);
-  position:relative;overflow:hidden;
-}
-.metric .head{display:flex;align-items:center;justify-content:space-between}
-.metric .ic{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:#fff}
-.metric .ic svg{width:20px;height:20px}
-.ic.t{background:linear-gradient(140deg,#fb7185,#f43f5e)}
-.ic.p{background:linear-gradient(140deg,#34d399,#0ea5a4)}
-.ic.d{background:linear-gradient(140deg,#fbbf24,#f59e0b)}
-.ic.l{background:linear-gradient(140deg,#38bdf8,#4f74ff)}
-.badge{font-size:11.5px;font-weight:600;padding:5px 10px;border-radius:999px}
-.badge.ok{color:#047857;background:rgba(16,185,129,.15)}
-.badge.warn{color:#b45309;background:rgba(245,158,11,.16)}
-.metric .label{font-size:13px;color:var(--muted);margin-top:14px}
-.metric .value{font-family:"Anuphan";font-weight:700;font-size:30px;margin-top:2px;letter-spacing:.5px}
-.metric .value small{font-size:14px;font-weight:500;color:var(--muted);margin-left:3px}
-.spark-wrap{position:relative;height:38px;margin-top:10px}
-
-/* ---------- กราฟบนแดชบอร์ด ---------- */
+/* ---------- กราฟ ---------- */
 .section-head{display:flex;align-items:center;justify-content:space-between;margin:6px 2px 14px;gap:12px;flex-wrap:wrap}
 .section-head h2{font-size:18px;font-weight:600}
 .seg{display:inline-flex;background:var(--glass-strong);border:1px solid var(--stroke);border-radius:12px;padding:4px;gap:2px;box-shadow:var(--shadow-sm)}
@@ -225,11 +218,11 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
   .sidebar.open{transform:none}
   .menu-btn{display:inline-grid;place-items:center;width:42px;height:42px;border-radius:12px;
     background:var(--glass-strong);border:1px solid var(--stroke);color:var(--ink)}
-  .metrics{grid-template-columns:1fr 1fr}
+  .hero-metrics{grid-template-columns:repeat(2,1fr)}
   .charts{grid-template-columns:1fr}
   .main{padding:16px 14px 40px}
 }
-@media(max-width:520px){.metrics{grid-template-columns:1fr}.hero-status{font-size:32px}}
+@media(max-width:520px){.hero-status{font-size:30px}}
 @media(prefers-reduced-motion:reduce){.wave-wrap .w1,.wave-wrap .w2{animation:none}.view.active{animation:none}}
 </style>
 </head>
@@ -240,13 +233,12 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
   <aside class="sidebar" id="sidebar">
     <div class="brand">
       <div class="logo" id="logoBox">
-        <img id="logoImg" src="logo.png" alt="logo">
-        <!-- ไอคอนหยดน้ำ (ใช้ชั่วคราวจนกว่าจะใส่โลโก้) -->
-        <svg id="logoFallback" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c4 5 6 8.5 6 11a6 6 0 1 1-12 0c0-2.5 2-6 6-11z"/></svg>
+        <img id="logoImg" src="logo1.png" alt="โลโก้">
+        <!-- ไอคอนหยดน้ำ (แสดงชั่วคราวถ้ายังไม่พบไฟล์โลโก้) -->
+        <svg id="logoFallback" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c4 5 6 8.5 6 11a6 6 0 1 1-12 0c0-2.5 2-6 6-11z"/></svg>
       </div>
       <div>
-        <div class="name">AquaSense</div>
-        <div class="tag">เฝ้าระวังคุณภาพน้ำ</div>
+        <div class="name">ระบบเฝ้าระวัง<br>คุณภาพน้ำ</div>
       </div>
     </div>
 
@@ -267,7 +259,7 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
 
     <div class="nav-foot">
       <div><span class="dot-live" id="liveDot"></span><span id="liveText">กำลังเชื่อมต่อ…</span></div>
-      <div style="margin-top:8px">ระบบเฝ้าระวังคุณภาพน้ำ IoT<br>Test 1.0.2</div>
+      <div style="margin-top:8px">ระบบเฝ้าระวังคุณภาพน้ำ IoT<br>Test V 1.0.3</div>
     </div>
   </aside>
   <div class="backdrop" id="backdrop"></div>
@@ -287,55 +279,38 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
 
     <!-- ====== VIEW: DASHBOARD ====== -->
     <section class="view active" id="view-dashboard">
-      <!-- HERO -->
+      <!-- HERO: สถานะรวม + ค่าตรวจวัดเรียลไทม์ทั้ง 4 ค่า -->
       <div class="hero">
-        <div class="hero-top">
-          <div>
-            <div class="hero-label">สถานะน้ำโดยรวม</div>
-            <div class="hero-status" id="overallStatus">— </div>
-            <div class="hero-sub" id="overallSub">กำลังโหลดข้อมูลจากเซนเซอร์…</div>
+        <div class="hero-label">สถานะน้ำโดยรวม</div>
+        <div class="hero-status" id="overallStatus">—</div>
+        <div class="hero-sub" id="overallSub">กำลังโหลดข้อมูลจากเซนเซอร์…</div>
+
+        <div class="hero-metrics">
+          <div class="hm">
+            <div class="hm-top"><span class="hm-label">อุณหภูมิ</span><span class="hm-badge ok" id="b-temp">—</span></div>
+            <div class="hm-val"><span id="v-temp">—</span><small>°C</small></div>
+            <div class="hm-spark"><canvas id="sp-temp"></canvas></div>
           </div>
-          <div class="hero-level">
-            <div class="hero-level-num" id="heroLevel">—%</div>
-            <div class="hero-level-cap">ระดับน้ำในบ่อ</div>
+          <div class="hm">
+            <div class="hm-top"><span class="hm-label">pH</span><span class="hm-badge ok" id="b-ph">—</span></div>
+            <div class="hm-val"><span id="v-ph">—</span></div>
+            <div class="hm-spark"><canvas id="sp-ph"></canvas></div>
+          </div>
+          <div class="hm">
+            <div class="hm-top"><span class="hm-label">TDS</span><span class="hm-badge ok" id="b-tds">—</span></div>
+            <div class="hm-val"><span id="v-tds">—</span><small>ppm</small></div>
+            <div class="hm-spark"><canvas id="sp-tds"></canvas></div>
+          </div>
+          <div class="hm">
+            <div class="hm-top"><span class="hm-label">ระดับน้ำ</span><span class="hm-badge ok" id="b-level">—</span></div>
+            <div class="hm-val"><span id="v-level">—</span><small>%</small></div>
+            <div class="hm-spark"><canvas id="sp-level"></canvas></div>
           </div>
         </div>
-        <div class="hero-chips">
-          <div class="hero-chip"><div class="k">อุณหภูมิ</div><div class="v" id="hTemp">—</div></div>
-          <div class="hero-chip"><div class="k">pH</div><div class="v" id="hPh">—</div></div>
-          <div class="hero-chip"><div class="k">TDS</div><div class="v" id="hTds">—</div></div>
-        </div>
+
         <div class="wave-wrap" id="waveWrap">
           <svg class="w1" viewBox="0 0 1200 30" preserveAspectRatio="none"><path d="M0 15 q150 -18 300 0 t300 0 t300 0 t300 0 V30 H0 Z" fill="rgba(255,255,255,.5)"/></svg>
           <svg class="w2" viewBox="0 0 1200 30" preserveAspectRatio="none"><path d="M0 16 q150 16 300 0 t300 0 t300 0 t300 0 V30 H0 Z" fill="rgba(255,255,255,.4)"/></svg>
-        </div>
-      </div>
-
-      <!-- METRIC CARDS -->
-      <div class="metrics">
-        <div class="metric">
-          <div class="head"><div class="ic t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13V5a2 2 0 1 1 4 0v8a4 4 0 1 1-4 0z"/></svg></div><span class="badge ok" id="b-temp">—</span></div>
-          <div class="label">อุณหภูมิ</div>
-          <div class="value"><span id="v-temp">—</span><small>°C</small></div>
-          <div class="spark-wrap"><canvas id="sp-temp"></canvas></div>
-        </div>
-        <div class="metric">
-          <div class="head"><div class="ic p"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h4l2 6 4-12 2 6h4"/></svg></div><span class="badge ok" id="b-ph">—</span></div>
-          <div class="label">ค่าความเป็นกรด-ด่าง (pH)</div>
-          <div class="value"><span id="v-ph">—</span></div>
-          <div class="spark-wrap"><canvas id="sp-ph"></canvas></div>
-        </div>
-        <div class="metric">
-          <div class="head"><div class="ic d"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="8" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="12" cy="13" r="1.6"/><circle cx="18" cy="14" r="1.6"/><circle cx="8" cy="17" r="1.6"/></svg></div><span class="badge ok" id="b-tds">—</span></div>
-          <div class="label">สารละลาย (TDS)</div>
-          <div class="value"><span id="v-tds">—</span><small>ppm</small></div>
-          <div class="spark-wrap"><canvas id="sp-tds"></canvas></div>
-        </div>
-        <div class="metric">
-          <div class="head"><div class="ic l"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2M4 19c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2"/></svg></div><span class="badge ok" id="b-level">—</span></div>
-          <div class="label">ระดับน้ำ</div>
-          <div class="value"><span id="v-level">—</span><small>%</small></div>
-          <div class="spark-wrap"><canvas id="sp-level"></canvas></div>
         </div>
       </div>
 
@@ -434,7 +409,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-/* ================= เกณฑ์ปกติ (ให้ตรงกับ ESP32) ================= */
+/* ================= เกณฑ์ "ปกติ" (ให้ตรงกับ ESP32) ================= */
 const TH = {
   ph:   {min:6.5, max:8.5},
   tds:  {max:500},
@@ -447,11 +422,26 @@ const okTemp  = v => v<=TH.temp.max;
 const okLevel = v => v>=TH.level.min;
 const rowOk   = r => okPh(+r.ph)&&okTds(+r.tds)&&okTemp(+r.temp)&&okLevel(+r.level);
 
-/* ================= โลโก้ (ถ้ามี logo.png จะแสดงอัตโนมัติ) ================= */
+/* ================= ช่วงแกน Y = สเปกการวัดของเซนเซอร์ =================
+   แก้ตัวเลขได้ที่นี่ที่เดียว
+   - อุณหภูมิ DS18B20 : 0 ถึง 60 °C
+   - pH PH-4502C      : 0 ถึง 14
+   - TDS (Gravity)    : 0 ถึง 1000 ppm
+   - ระดับน้ำ         : 0 ถึง 100 % (HC-SR04P วัดระยะ 2–400 ซม. แล้วแปลงเป็น %)
+*/
+const AXIS = {
+  temp:  {min:0, max:60},
+  ph:    {min:0,   max:14},
+  tds:   {min:0,   max:1000},
+  level: {min:0,   max:100}
+};
+
+/* ================= โลโก้ (ถ้ามี logo1.png จะแสดงอัตโนมัติ) ================= */
 (function(){
+  const box=document.getElementById('logoBox');
   const img=document.getElementById('logoImg'), fb=document.getElementById('logoFallback');
-  img.onload=()=>{img.style.display='block';fb.style.display='none';};
-  img.onerror=()=>{img.style.display='none';fb.style.display='block';};
+  img.onload =()=>{img.style.display='block';fb.style.display='none';box.classList.add('has-img');};
+  img.onerror=()=>{img.style.display='none';fb.style.display='block';box.classList.remove('has-img');};
 })();
 
 /* ================= สลับเมนู / หน้า ================= */
@@ -479,7 +469,7 @@ document.getElementById('menuBtn').onclick=()=>{sidebar.classList.add('open');ba
 backdrop.onclick=closeMenu;
 
 /* ================= Helper กราฟ ================= */
-function baseChart(ctx,label,color){
+function baseChart(ctx,label,color,axis){
   return new Chart(ctx,{
     type:'line',
     data:{labels:[],datasets:[{label,data:[],borderColor:color,
@@ -490,40 +480,41 @@ function baseChart(ctx,label,color){
       plugins:{legend:{display:false},tooltip:{backgroundColor:'#16233c',padding:10,titleFont:{family:'IBM Plex Sans Thai'},bodyFont:{family:'IBM Plex Sans Thai'}}},
       scales:{
         x:{ticks:{color:'#8b97ad',maxRotation:0,autoSkip:true,maxTicksLimit:7,font:{size:10}},grid:{color:'rgba(120,140,170,.1)'}},
-        y:{ticks:{color:'#8b97ad',font:{size:10}},grid:{color:'rgba(120,140,170,.12)'}}
+        y:{min:axis.min,max:axis.max,ticks:{color:'#8b97ad',font:{size:10}},grid:{color:'rgba(120,140,170,.12)'}}
       }
     }
   });
 }
-function spark(ctx,color){
+/* sparkline สีขาว (สำหรับพื้นสีฟ้าใน hero) */
+function heroSpark(ctx){
   return new Chart(ctx,{type:'line',
-    data:{labels:[],datasets:[{data:[],borderColor:color,backgroundColor:color+'22',
+    data:{labels:[],datasets:[{data:[],borderColor:'rgba(255,255,255,.95)',backgroundColor:'rgba(255,255,255,.18)',
       fill:true,tension:.4,pointRadius:0,borderWidth:1.8}]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{enabled:false}},
-      scales:{x:{display:false},y:{display:false}},elements:{line:{borderJoinStyle:'round'}}}});
+      scales:{x:{display:false},y:{display:false}}}});
 }
 const fmtTime = t => new Date(t*1000).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
 const fmtFull = t => new Date(t*1000).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'});
 
-/* กราฟบนแดชบอร์ด */
-const dTemp=baseChart(document.getElementById('c-temp'),'อุณหภูมิ','#f43f5e');
-const dPh=baseChart(document.getElementById('c-ph'),'pH','#0ea5a4');
-const dTds=baseChart(document.getElementById('c-tds'),'TDS','#f59e0b');
-const dLevel=baseChart(document.getElementById('c-level'),'ระดับน้ำ','#4f74ff');
-/* sparkline */
-const spTemp=spark(document.getElementById('sp-temp'),'#f43f5e');
-const spPh=spark(document.getElementById('sp-ph'),'#0ea5a4');
-const spTds=spark(document.getElementById('sp-tds'),'#f59e0b');
-const spLevel=spark(document.getElementById('sp-level'),'#4f74ff');
-/* กราฟหน้าย้อนหลัง */
-const hTemp=baseChart(document.getElementById('hc-temp'),'อุณหภูมิ','#f43f5e');
-const hPh=baseChart(document.getElementById('hc-ph'),'pH','#0ea5a4');
-const hTds=baseChart(document.getElementById('hc-tds'),'TDS','#f59e0b');
-const hLevel=baseChart(document.getElementById('hc-level'),'ระดับน้ำ','#4f74ff');
+/* กราฟแดชบอร์ด (แกน Y = สเปกเซนเซอร์) */
+const dTemp=baseChart(document.getElementById('c-temp'),'อุณหภูมิ','#f43f5e',AXIS.temp);
+const dPh=baseChart(document.getElementById('c-ph'),'pH','#0ea5a4',AXIS.ph);
+const dTds=baseChart(document.getElementById('c-tds'),'TDS','#f59e0b',AXIS.tds);
+const dLevel=baseChart(document.getElementById('c-level'),'ระดับน้ำ','#4f74ff',AXIS.level);
+/* sparkline ใน hero */
+const spTemp=heroSpark(document.getElementById('sp-temp'));
+const spPh=heroSpark(document.getElementById('sp-ph'));
+const spTds=heroSpark(document.getElementById('sp-tds'));
+const spLevel=heroSpark(document.getElementById('sp-level'));
+/* กราฟหน้าย้อนหลัง (แกน Y = สเปกเซนเซอร์) */
+const hTemp=baseChart(document.getElementById('hc-temp'),'อุณหภูมิ','#f43f5e',AXIS.temp);
+const hPh=baseChart(document.getElementById('hc-ph'),'pH','#0ea5a4',AXIS.ph);
+const hTds=baseChart(document.getElementById('hc-tds'),'TDS','#f59e0b',AXIS.tds);
+const hLevel=baseChart(document.getElementById('hc-level'),'ระดับน้ำ','#4f74ff',AXIS.level);
 
 /* ================= ค่าปัจจุบัน (เรียลไทม์) ================= */
-function setBadge(id,ok){const el=document.getElementById(id);el.textContent=ok?'ปกติ':'ผิดปกติ';el.className='badge '+(ok?'ok':'warn');}
+function setBadge(id,ok){const el=document.getElementById(id);el.textContent=ok?'ปกติ':'ผิดปกติ';el.className='hm-badge '+(ok?'ok':'warn');}
 db.ref('current').on('value',snap=>{
   const d=snap.val(); if(!d) return;
   const temp=+d.temp, ph=+d.ph, tds=+d.tds, level=+d.level;
@@ -535,11 +526,7 @@ db.ref('current').on('value',snap=>{
   setBadge('b-temp',okTemp(temp));setBadge('b-ph',okPh(ph));
   setBadge('b-tds',okTds(tds));setBadge('b-level',okLevel(level));
 
-  /* hero */
-  document.getElementById('hTemp').textContent=temp.toFixed(1)+'°C';
-  document.getElementById('hPh').textContent=ph.toFixed(2);
-  document.getElementById('hTds').textContent=Math.round(tds)+' ppm';
-  document.getElementById('heroLevel').textContent=Math.round(level)+'%';
+  /* คลื่นน้ำสะท้อนระดับน้ำจริง */
   document.getElementById('waveWrap').style.height=Math.max(6,Math.min(100,level))+'%';
 
   const allOk=okTemp(temp)&&okPh(ph)&&okTds(tds)&&okLevel(level);
@@ -549,8 +536,7 @@ db.ref('current').on('value',snap=>{
     : 'มีบางค่าออกนอกเกณฑ์ ควรตรวจสอบบ่อและอุปกรณ์';
 
   if(d.time){
-    const txt='อัปเดตล่าสุด: '+fmtFull(d.time);
-    document.getElementById('lastUpdate').textContent=txt;
+    document.getElementById('lastUpdate').textContent='อัปเดตล่าสุด: '+fmtFull(d.time);
   }
 });
 
@@ -562,7 +548,7 @@ function setLive(on){
 db.ref('.info/connected').on('value',s=>setLive(s.val()===true));
 
 /* ================= ประวัติ ================= */
-let HISTORY=[];   // ทั้งหมดที่โหลดมา (เรียงเก่า→ใหม่)
+let HISTORY=[];
 const DASH_N={value:50};
 
 db.ref('history').limitToLast(2000).on('value',snap=>{
@@ -587,7 +573,6 @@ function updateSparks(){
   const set=(ch,key)=>{ch.data.labels=rows.map(()=> '');ch.data.datasets[0].data=rows.map(r=>+r[key]);ch.update('none');};
   set(spTemp,'temp');set(spPh,'ph');set(spTds,'tds');set(spLevel,'level');
 }
-/* ปุ่มเลือกจำนวนจุดบนแดชบอร์ด */
 document.querySelectorAll('#dashRange button').forEach(b=>{
   b.onclick=()=>{document.querySelectorAll('#dashRange button').forEach(x=>x.classList.toggle('on',x===b));
     DASH_N.value=+b.dataset.n;updateDashCharts();};
@@ -636,7 +621,7 @@ function currentTableRange(){
   return filterRange(toTs(document.getElementById('tFrom').value),toTs(document.getElementById('tTo').value));
 }
 function renderTable(){
-  filtered=currentTableRange().slice().reverse(); // ใหม่สุดก่อน
+  filtered=currentTableRange().slice().reverse();
   const pages=Math.max(1,Math.ceil(filtered.length/PAGE));
   if(page>pages) page=pages;
   const tbody=document.getElementById('tbody');
