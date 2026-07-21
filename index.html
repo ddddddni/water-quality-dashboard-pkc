@@ -213,6 +213,8 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
 
 /* ---------- Mobile ---------- */
 .menu-btn{display:none}
+.backdrop{display:none;position:fixed;inset:0;background:rgba(20,30,55,.35);z-index:40}
+.backdrop.show{display:block}
 @media(max-width:920px){
   .app{grid-template-columns:1fr}
   .sidebar{
@@ -225,8 +227,6 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
   .metrics{grid-template-columns:1fr 1fr}
   .charts{grid-template-columns:1fr}
   .main{padding:16px 14px 40px}
-  .backdrop{position:fixed;inset:0;background:rgba(20,30,55,.35);z-index:40;display:none}
-  .backdrop.show{display:block}
 }
 @media(max-width:520px){.metrics{grid-template-columns:1fr}.hero-status{font-size:32px}}
 @media(prefers-reduced-motion:reduce){.wave-wrap .w1,.wave-wrap .w2{animation:none}.view.active{animation:none}}
@@ -266,7 +266,7 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
 
     <div class="nav-foot">
       <div><span class="dot-live" id="liveDot"></span><span id="liveText">กำลังเชื่อมต่อ…</span></div>
-      <div style="margin-top:8px"> · ระบบเฝ้าระวังคุณภาพน้ำ IoT<br>test</div>
+      <div style="margin-top:8px">ระบบเฝ้าระวังคุณภาพน้ำ IoT<br>Test 1.0.1</div>
     </div>
   </aside>
   <div class="backdrop" id="backdrop"></div>
