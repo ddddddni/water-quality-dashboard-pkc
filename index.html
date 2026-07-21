@@ -3,75 +3,424 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ระบบเฝ้าระวังคุณภาพน้ำ IoT</title>
+<title>AquaSense — ระบบเฝ้าระวังคุณภาพน้ำ</title>
 
-<!-- Firebase (compat, ใช้งานง่ายผ่าน CDN) -->
+<!-- ฟอนต์ไทย: Anuphan (หัวข้อ/ตัวเลข) + IBM Plex Sans Thai (เนื้อหา/ตาราง) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- Firebase (compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", "Sarabun", sans-serif; }
-  body { background:#0f172a; color:#e2e8f0; padding: 20px; }
-  h1 { text-align:center; margin-bottom: 6px; font-size: 22px; }
-  .updated { text-align:center; color:#94a3b8; font-size:13px; margin-bottom:20px; }
+:root{
+  --bg-1:#e9edfb; --bg-2:#e6f1f8; --bg-3:#e3f4f1;
+  --glass:rgba(255,255,255,.55);
+  --glass-strong:rgba(255,255,255,.74);
+  --stroke:rgba(255,255,255,.7);
+  --ink:#16233c; --muted:#6a7891; --faint:#95a1b6;
+  --accent1:#28c7e6; --accent2:#4f74ff; --indigo:#6366f1;
+  --ok:#10b981; --warn:#f59e0b; --bad:#f43f5e;
+  --shadow:0 14px 34px -16px rgba(31,45,80,.35);
+  --shadow-sm:0 6px 18px -10px rgba(31,45,80,.3);
+  --r:20px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:"IBM Plex Sans Thai","Anuphan",sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(1100px 600px at 12% -8%, #f2f5ff 0%, transparent 55%),
+    radial-gradient(1000px 700px at 110% 10%, #e2f6f2 0%, transparent 50%),
+    linear-gradient(135deg,var(--bg-1) 0%,var(--bg-2) 46%,var(--bg-3) 100%);
+  background-attachment:fixed;
+  min-height:100vh;
+}
+h1,h2,h3,.num{font-family:"Anuphan",sans-serif}
+button{font-family:inherit;cursor:pointer}
 
-  .cards { display:grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap:12px; max-width:900px; margin:0 auto 24px; }
-  .card { background:#1e293b; border-radius:12px; padding:16px; text-align:center; border:1px solid #334155; }
-  .card .label { font-size:13px; color:#94a3b8; margin-bottom:6px; }
-  .card .value { font-size:26px; font-weight:bold; }
-  .card.ok .value { color:#4ade80; }
-  .card.warn .value { color:#f87171; }
+/* ---------- โครงหน้า ---------- */
+.app{display:grid;grid-template-columns:238px 1fr;min-height:100vh}
 
-  .chart-box { max-width:900px; margin:0 auto 24px; background:#1e293b; border-radius:12px; padding:16px; border:1px solid #334155; }
-  canvas { max-height:280px; }
+/* ---------- Sidebar ---------- */
+.sidebar{
+  margin:16px 0 16px 16px;padding:18px 14px;
+  background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border:1px solid var(--stroke);border-radius:24px;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;gap:6px;position:sticky;top:16px;height:calc(100vh - 32px);
+}
+.brand{display:flex;align-items:center;gap:11px;padding:8px 8px 18px}
+.brand .logo{
+  width:42px;height:42px;border-radius:13px;flex:none;overflow:hidden;
+  display:grid;place-items:center;color:#fff;
+  background:linear-gradient(140deg,var(--accent1),var(--accent2));
+  box-shadow:0 8px 18px -6px rgba(79,116,255,.55);
+}
+.brand .logo img{width:100%;height:100%;object-fit:cover;display:none}
+.brand .name{font-family:"Anuphan";font-weight:700;font-size:18px;line-height:1.05}
+.brand .tag{font-size:11px;color:var(--muted)}
+.nav{display:flex;flex-direction:column;gap:4px;margin-top:4px}
+.nav-item{
+  display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  padding:11px 13px;border:none;border-radius:14px;background:transparent;
+  color:var(--muted);font-size:14.5px;font-weight:500;transition:.18s;
+}
+.nav-item svg{width:20px;height:20px;flex:none}
+.nav-item:hover{background:rgba(255,255,255,.55);color:var(--ink)}
+.nav-item.active{
+  background:linear-gradient(135deg,var(--accent2),var(--indigo));
+  color:#fff;box-shadow:0 10px 20px -8px rgba(79,116,255,.6);
+}
+.nav-foot{margin-top:auto;font-size:11.5px;color:var(--faint);padding:12px 10px 2px;line-height:1.5}
+.dot-live{width:8px;height:8px;border-radius:50%;background:var(--bad);display:inline-block;margin-right:6px;vertical-align:middle}
+.dot-live.on{background:var(--ok);box-shadow:0 0 0 4px rgba(16,185,129,.18)}
 
-  .status { text-align:center; font-size:13px; color:#94a3b8; }
+/* ---------- Main ---------- */
+.main{padding:22px 26px 40px;min-width:0}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.topbar h1{font-size:24px;font-weight:700}
+.topbar .sub{font-size:13px;color:var(--muted);margin-top:2px}
+.status-pill{
+  display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border-radius:999px;
+  background:var(--glass-strong);border:1px solid var(--stroke);box-shadow:var(--shadow-sm);
+  font-size:13px;color:var(--muted);font-weight:500;
+}
+
+/* ---------- Hero ---------- */
+.hero{
+  position:relative;overflow:hidden;border-radius:26px;padding:26px 28px;margin-bottom:20px;
+  color:#fff;isolation:isolate;
+  background:linear-gradient(135deg,#3aa0f0 0%,#4f74ff 48%,#7367f0 100%);
+  box-shadow:0 22px 48px -22px rgba(79,90,220,.75);min-height:220px;
+}
+.hero::before{content:"";position:absolute;inset:0;background:
+  radial-gradient(420px 220px at 88% -20%, rgba(255,255,255,.35), transparent 60%);z-index:-1}
+.hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;position:relative;z-index:3}
+.hero-label{font-size:13px;opacity:.9;font-weight:500;letter-spacing:.3px}
+.hero-status{font-family:"Anuphan";font-weight:700;font-size:40px;line-height:1.1;margin-top:4px}
+.hero-sub{font-size:13.5px;opacity:.92;margin-top:4px;max-width:360px}
+.hero-level{text-align:right;flex:none}
+.hero-level-num{font-family:"Anuphan";font-weight:700;font-size:38px;line-height:1}
+.hero-level-cap{font-size:12.5px;opacity:.9;margin-top:2px}
+.hero-chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px;position:relative;z-index:3}
+.hero-chip{
+  background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);
+  padding:9px 14px;border-radius:14px;backdrop-filter:blur(6px);
+}
+.hero-chip .k{font-size:11.5px;opacity:.88}
+.hero-chip .v{font-family:"Anuphan";font-weight:600;font-size:19px;margin-top:1px}
+/* คลื่นน้ำ = ระดับน้ำจริง */
+.wave-wrap{position:absolute;left:0;right:0;bottom:0;height:0%;z-index:1;transition:height .9s cubic-bezier(.4,0,.2,1);
+  background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.16))}
+.wave-wrap svg{position:absolute;top:-14px;left:0;width:200%;height:26px}
+.wave-wrap .w1{animation:wave 7s linear infinite;opacity:.5}
+.wave-wrap .w2{animation:wave 11s linear infinite reverse;opacity:.35}
+@keyframes wave{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ---------- การ์ดค่าตรวจวัด ---------- */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+.metric{
+  background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--stroke);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);
+  position:relative;overflow:hidden;
+}
+.metric .head{display:flex;align-items:center;justify-content:space-between}
+.metric .ic{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:#fff}
+.metric .ic svg{width:20px;height:20px}
+.ic.t{background:linear-gradient(140deg,#fb7185,#f43f5e)}
+.ic.p{background:linear-gradient(140deg,#34d399,#0ea5a4)}
+.ic.d{background:linear-gradient(140deg,#fbbf24,#f59e0b)}
+.ic.l{background:linear-gradient(140deg,#38bdf8,#4f74ff)}
+.badge{font-size:11.5px;font-weight:600;padding:5px 10px;border-radius:999px}
+.badge.ok{color:#047857;background:rgba(16,185,129,.15)}
+.badge.warn{color:#b45309;background:rgba(245,158,11,.16)}
+.metric .label{font-size:13px;color:var(--muted);margin-top:14px}
+.metric .value{font-family:"Anuphan";font-weight:700;font-size:30px;margin-top:2px;letter-spacing:.5px}
+.metric .value small{font-size:14px;font-weight:500;color:var(--muted);margin-left:3px}
+.metric .spark{margin-top:8px;height:34px}
+
+/* ---------- กราฟบนแดชบอร์ด ---------- */
+.section-head{display:flex;align-items:center;justify-content:space-between;margin:6px 2px 14px;gap:12px;flex-wrap:wrap}
+.section-head h2{font-size:18px;font-weight:600}
+.seg{display:inline-flex;background:var(--glass-strong);border:1px solid var(--stroke);border-radius:12px;padding:4px;gap:2px;box-shadow:var(--shadow-sm)}
+.seg button{border:none;background:transparent;color:var(--muted);font-size:12.5px;font-weight:500;padding:7px 13px;border-radius:9px}
+.seg button.on{background:linear-gradient(135deg,var(--accent2),var(--indigo));color:#fff}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.panel{
+  background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--stroke);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow);
+}
+.panel .p-title{font-size:14px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.panel .p-title .swatch{width:10px;height:10px;border-radius:3px}
+.panel canvas{max-height:230px}
+
+/* ---------- แถบกรองช่วงเวลา ---------- */
+.filterbar{
+  display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:18px;
+  background:var(--glass);border:1px solid var(--stroke);border-radius:18px;padding:16px 18px;box-shadow:var(--shadow-sm);
+}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:12px;color:var(--muted);font-weight:500;padding-left:2px}
+.field input{
+  font-family:inherit;font-size:14px;color:var(--ink);
+  border:1px solid rgba(120,140,170,.3);background:rgba(255,255,255,.7);
+  border-radius:11px;padding:9px 12px;outline:none;transition:.15s;
+}
+.field input:focus{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(79,116,255,.18)}
+.btn{
+  border:none;border-radius:11px;padding:10px 16px;font-size:13.5px;font-weight:600;
+  background:linear-gradient(135deg,var(--accent2),var(--indigo));color:#fff;
+  box-shadow:0 10px 20px -10px rgba(79,116,255,.6);transition:.15s;
+}
+.btn:hover{transform:translateY(-1px)}
+.btn.ghost{background:rgba(255,255,255,.75);color:var(--ink);border:1px solid var(--stroke);box-shadow:none}
+.presets{display:flex;gap:7px;flex-wrap:wrap}
+.chip-btn{border:1px solid var(--stroke);background:rgba(255,255,255,.6);color:var(--muted);
+  font-size:12.5px;font-weight:500;padding:8px 13px;border-radius:999px;transition:.15s}
+.chip-btn:hover{color:var(--ink)}
+.chip-btn.on{background:linear-gradient(135deg,var(--accent2),var(--indigo));color:#fff;border-color:transparent}
+.spacer{flex:1 1 auto}
+
+/* ---------- ตาราง ---------- */
+.tablecard{background:var(--glass);border:1px solid var(--stroke);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:640px}
+thead th{
+  text-align:left;font-weight:600;color:var(--muted);font-size:12.5px;
+  padding:14px 18px;background:rgba(255,255,255,.45);position:sticky;top:0;white-space:nowrap;
+}
+tbody td{padding:12px 18px;border-top:1px solid rgba(120,140,170,.14);white-space:nowrap}
+tbody tr:hover{background:rgba(255,255,255,.4)}
+.num{font-variant-numeric:tabular-nums}
+.tag{font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px}
+.tag.ok{color:#047857;background:rgba(16,185,129,.15)}
+.tag.bad{color:#b91c1c;background:rgba(244,63,94,.15)}
+.tablefoot{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.pager{display:flex;gap:6px}
+.pager button{border:1px solid var(--stroke);background:rgba(255,255,255,.6);border-radius:9px;padding:7px 12px;font-size:13px;color:var(--ink)}
+.pager button:disabled{opacity:.4;cursor:default}
+.empty{text-align:center;padding:50px 20px;color:var(--muted)}
+.empty .big{font-size:34px;margin-bottom:8px}
+
+.view{display:none}
+.view.active{display:block;animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ---------- Mobile ---------- */
+.menu-btn{display:none}
+@media(max-width:920px){
+  .app{grid-template-columns:1fr}
+  .sidebar{
+    position:fixed;z-index:50;left:0;top:0;height:100vh;margin:0;border-radius:0 22px 22px 0;
+    width:250px;transform:translateX(-105%);transition:.28s;
+  }
+  .sidebar.open{transform:none}
+  .menu-btn{display:inline-grid;place-items:center;width:42px;height:42px;border-radius:12px;
+    background:var(--glass-strong);border:1px solid var(--stroke);color:var(--ink)}
+  .metrics{grid-template-columns:1fr 1fr}
+  .charts{grid-template-columns:1fr}
+  .main{padding:16px 14px 40px}
+  .backdrop{position:fixed;inset:0;background:rgba(20,30,55,.35);z-index:40;display:none}
+  .backdrop.show{display:block}
+}
+@media(max-width:520px){.metrics{grid-template-columns:1fr}.hero-status{font-size:32px}}
+@media(prefers-reduced-motion:reduce){.wave-wrap .w1,.wave-wrap .w2{animation:none}.view.active{animation:none}}
 </style>
 </head>
 <body>
+<div class="app">
 
-<h1>🌊 ระบบเฝ้าระวังคุณภาพน้ำและระดับน้ำอัจฉริยะ</h1>
-<div class="updated" id="lastUpdate">กำลังโหลดข้อมูล...</div>
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo" id="logoBox">
+        <img id="logoImg" src="logo.png" alt="logo">
+        <!-- ไอคอนหยดน้ำ (ใช้ชั่วคราวจนกว่าจะใส่โลโก้) -->
+        <svg id="logoFallback" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c4 5 6 8.5 6 11a6 6 0 1 1-12 0c0-2.5 2-6 6-11z"/></svg>
+      </div>
+      <div>
+        <div class="name">AquaSense</div>
+        <div class="tag">เฝ้าระวังคุณภาพน้ำ</div>
+      </div>
+    </div>
 
-<div class="cards">
-  <div class="card" id="card-ph">
-    <div class="label">pH</div>
-    <div class="value" id="val-ph">--</div>
-  </div>
-  <div class="card" id="card-tds">
-    <div class="label">TDS (ppm)</div>
-    <div class="value" id="val-tds">--</div>
-  </div>
-  <div class="card" id="card-temp">
-    <div class="label">อุณหภูมิ (°C)</div>
-    <div class="value" id="val-temp">--</div>
-  </div>
-  <div class="card" id="card-level">
-    <div class="label">ระดับน้ำ (%)</div>
-    <div class="value" id="val-level">--</div>
-  </div>
-</div>
+    <nav class="nav">
+      <button class="nav-item active" data-view="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        แดชบอร์ด
+      </button>
+      <button class="nav-item" data-view="charts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M8 15l3-4 3 3 4-6"/></svg>
+        กราฟย้อนหลัง
+      </button>
+      <button class="nav-item" data-view="table">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M3 14h18M9 4v16"/></svg>
+        ตารางย้อนหลัง
+      </button>
+    </nav>
 
-<div class="chart-box">
-  <canvas id="phChart"></canvas>
-</div>
-<div class="chart-box">
-  <canvas id="tdsChart"></canvas>
-</div>
-<div class="chart-box">
-  <canvas id="tempChart"></canvas>
-</div>
-<div class="chart-box">
-  <canvas id="levelChart"></canvas>
-</div>
+    <div class="nav-foot">
+      <div><span class="dot-live" id="liveDot"></span><span id="liveText">กำลังเชื่อมต่อ…</span></div>
+      <div style="margin-top:8px"> · ระบบเฝ้าระวังคุณภาพน้ำ IoT<br>test</div>
+    </div>
+  </aside>
+  <div class="backdrop" id="backdrop"></div>
 
-<div class="status" id="connStatus">กำลังเชื่อมต่อ Firebase...</div>
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="menu-btn" id="menuBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+        <div>
+          <h1 id="pageTitle">ภาพรวมคุณภาพน้ำ</h1>
+          <div class="sub" id="pageSub">ข้อมูลเรียลไทม์จากเซนเซอร์ในบ่อ</div>
+        </div>
+      </div>
+      <div class="status-pill"><span class="dot-live" id="liveDot2"></span><span id="lastUpdate">กำลังโหลดข้อมูล…</span></div>
+    </div>
+
+    <!-- ====== VIEW: DASHBOARD ====== -->
+    <section class="view active" id="view-dashboard">
+      <!-- HERO -->
+      <div class="hero">
+        <div class="hero-top">
+          <div>
+            <div class="hero-label">สถานะน้ำโดยรวม</div>
+            <div class="hero-status" id="overallStatus">— </div>
+            <div class="hero-sub" id="overallSub">กำลังโหลดข้อมูลจากเซนเซอร์…</div>
+          </div>
+          <div class="hero-level">
+            <div class="hero-level-num" id="heroLevel">—%</div>
+            <div class="hero-level-cap">ระดับน้ำในบ่อ</div>
+          </div>
+        </div>
+        <div class="hero-chips">
+          <div class="hero-chip"><div class="k">อุณหภูมิ</div><div class="v" id="hTemp">—</div></div>
+          <div class="hero-chip"><div class="k">pH</div><div class="v" id="hPh">—</div></div>
+          <div class="hero-chip"><div class="k">TDS</div><div class="v" id="hTds">—</div></div>
+        </div>
+        <div class="wave-wrap" id="waveWrap">
+          <svg class="w1" viewBox="0 0 1200 30" preserveAspectRatio="none"><path d="M0 15 q150 -18 300 0 t300 0 t300 0 t300 0 V30 H0 Z" fill="rgba(255,255,255,.5)"/></svg>
+          <svg class="w2" viewBox="0 0 1200 30" preserveAspectRatio="none"><path d="M0 16 q150 16 300 0 t300 0 t300 0 t300 0 V30 H0 Z" fill="rgba(255,255,255,.4)"/></svg>
+        </div>
+      </div>
+
+      <!-- METRIC CARDS -->
+      <div class="metrics">
+        <div class="metric">
+          <div class="head"><div class="ic t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13V5a2 2 0 1 1 4 0v8a4 4 0 1 1-4 0z"/></svg></div><span class="badge ok" id="b-temp">—</span></div>
+          <div class="label">อุณหภูมิ</div>
+          <div class="value"><span id="v-temp">—</span><small>°C</small></div>
+          <canvas class="spark" id="sp-temp"></canvas>
+        </div>
+        <div class="metric">
+          <div class="head"><div class="ic p"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h4l2 6 4-12 2 6h4"/></svg></div><span class="badge ok" id="b-ph">—</span></div>
+          <div class="label">ค่าความเป็นกรด-ด่าง (pH)</div>
+          <div class="value"><span id="v-ph">—</span></div>
+          <canvas class="spark" id="sp-ph"></canvas>
+        </div>
+        <div class="metric">
+          <div class="head"><div class="ic d"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="8" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="12" cy="13" r="1.6"/><circle cx="18" cy="14" r="1.6"/><circle cx="8" cy="17" r="1.6"/></svg></div><span class="badge ok" id="b-tds">—</span></div>
+          <div class="label">สารละลาย (TDS)</div>
+          <div class="value"><span id="v-tds">—</span><small>ppm</small></div>
+          <canvas class="spark" id="sp-tds"></canvas>
+        </div>
+        <div class="metric">
+          <div class="head"><div class="ic l"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2M4 19c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2"/></svg></div><span class="badge ok" id="b-level">—</span></div>
+          <div class="label">ระดับน้ำ</div>
+          <div class="value"><span id="v-level">—</span><small>%</small></div>
+          <canvas class="spark" id="sp-level"></canvas>
+        </div>
+      </div>
+
+      <!-- CHARTS -->
+      <div class="section-head">
+        <h2>แนวโน้มตามเวลา</h2>
+        <div class="seg" id="dashRange">
+          <button data-n="20">20 จุด</button>
+          <button data-n="50" class="on">50 จุด</button>
+          <button data-n="100">100 จุด</button>
+        </div>
+      </div>
+      <div class="charts">
+        <div class="panel"><div class="p-title"><span class="swatch" style="background:#f43f5e"></span>อุณหภูมิ (°C)</div><canvas id="c-temp"></canvas></div>
+        <div class="panel"><div class="p-title"><span class="swatch" style="background:#0ea5a4"></span>pH</div><canvas id="c-ph"></canvas></div>
+        <div class="panel"><div class="p-title"><span class="swatch" style="background:#f59e0b"></span>TDS (ppm)</div><canvas id="c-tds"></canvas></div>
+        <div class="panel"><div class="p-title"><span class="swatch" style="background:#4f74ff"></span>ระดับน้ำ (%)</div><canvas id="c-level"></canvas></div>
+      </div>
+    </section>
+
+    <!-- ====== VIEW: CHARTS (ย้อนหลังตามช่วงเวลา) ====== -->
+    <section class="view" id="view-charts">
+      <div class="filterbar">
+        <div class="field"><label>ตั้งแต่</label><input type="datetime-local" id="cFrom"></div>
+        <div class="field"><label>ถึง</label><input type="datetime-local" id="cTo"></div>
+        <button class="btn" id="cApply">ค้นหา</button>
+        <button class="btn ghost" id="cReset">ล้าง</button>
+        <div class="spacer"></div>
+        <div class="presets" id="cPresets">
+          <button class="chip-btn" data-h="24">24 ชม.</button>
+          <button class="chip-btn" data-h="168">7 วัน</button>
+          <button class="chip-btn" data-h="720">30 วัน</button>
+          <button class="chip-btn on" data-h="0">ทั้งหมด</button>
+        </div>
+      </div>
+      <div id="chartsRangeInfo" class="sub" style="margin:-6px 2px 14px;color:var(--muted)"></div>
+      <div class="charts">
+        <div class="panel"><div class="p-title"><span class="swatch" style="background:#f43f5e"></span>อุณหภูมิ (°C)</div><canvas id="hc-temp"></canvas></div>
+        <div class="panel"><div class="p-title"><span class="swatch" style="background:#0ea5a4"></span>pH</div><canvas id="hc-ph"></canvas></div>
+        <div class="panel"><div class="p-title"><span class="swatch" style="background:#f59e0b"></span>TDS (ppm)</div><canvas id="hc-tds"></canvas></div>
+        <div class="panel"><div class="p-title"><span class="swatch" style="background:#4f74ff"></span>ระดับน้ำ (%)</div><canvas id="hc-level"></canvas></div>
+      </div>
+    </section>
+
+    <!-- ====== VIEW: TABLE ====== -->
+    <section class="view" id="view-table">
+      <div class="filterbar">
+        <div class="field"><label>ตั้งแต่</label><input type="datetime-local" id="tFrom"></div>
+        <div class="field"><label>ถึง</label><input type="datetime-local" id="tTo"></div>
+        <button class="btn" id="tApply">ค้นหา</button>
+        <button class="btn ghost" id="tReset">ล้าง</button>
+        <div class="spacer"></div>
+        <div class="presets" id="tPresets">
+          <button class="chip-btn" data-h="24">24 ชม.</button>
+          <button class="chip-btn" data-h="168">7 วัน</button>
+          <button class="chip-btn" data-h="720">30 วัน</button>
+          <button class="chip-btn on" data-h="0">ทั้งหมด</button>
+        </div>
+        <button class="btn ghost" id="csvBtn">⬇ ส่งออก CSV</button>
+      </div>
+
+      <div class="tablecard">
+        <div class="table-scroll">
+          <table>
+            <thead><tr>
+              <th>เวลา</th><th>อุณหภูมิ (°C)</th><th>pH</th><th>TDS (ppm)</th><th>ระดับน้ำ (%)</th><th>สถานะ</th>
+            </tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <div id="tableEmpty" class="empty" hidden><div class="big">🫗</div>ไม่พบข้อมูลในช่วงเวลาที่เลือก</div>
+        <div class="tablefoot">
+          <div id="tableCount">—</div>
+          <div class="pager">
+            <button id="prevPage" disabled>‹ ก่อนหน้า</button>
+            <span id="pageInfo" style="align-self:center;font-size:13px;padding:0 6px">—</span>
+            <button id="nextPage" disabled>ถัดไป ›</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
 
 <script>
-// ===== Firebase config =====
+/* ================= Firebase config ================= */
 const firebaseConfig = {
   apiKey: "AIzaSyD4RJXXmmCgT1JmdkADF5_jEO1Xf8lUT6U",
   authDomain: "water-monitoring2026.firebaseapp.com",
@@ -81,84 +430,255 @@ const firebaseConfig = {
   messagingSenderId: "102072996918",
   appId: "1:102072996918:web:05b83cad4271f717a57497"
 };
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// ===== เกณฑ์ปกติ (ให้ตรงกับ ESP32) =====
-const THRESHOLDS = {
-  ph:    { min: 6.5, max: 8.5 },
-  tds:   { max: 500 },
-  temp:  { max: 32.0 },
-  level: { min: 20.0 }
+/* ================= เกณฑ์ปกติ (ให้ตรงกับ ESP32) ================= */
+const TH = {
+  ph:   {min:6.5, max:8.5},
+  tds:  {max:500},
+  temp: {max:32.0},
+  level:{min:20.0}
 };
+const okPh    = v => v>=TH.ph.min && v<=TH.ph.max;
+const okTds   = v => v<=TH.tds.max;
+const okTemp  = v => v<=TH.temp.max;
+const okLevel = v => v>=TH.level.min;
+const rowOk   = r => okPh(+r.ph)&&okTds(+r.tds)&&okTemp(+r.temp)&&okLevel(+r.level);
 
-function setCard(id, value, ok) {
-  document.getElementById("val-" + id).textContent = value;
-  document.getElementById("card-" + id).className = "card " + (ok ? "ok" : "warn");
-}
+/* ================= โลโก้ (ถ้ามี logo.png จะแสดงอัตโนมัติ) ================= */
+(function(){
+  const img=document.getElementById('logoImg'), fb=document.getElementById('logoFallback');
+  img.onload=()=>{img.style.display='block';fb.style.display='none';};
+  img.onerror=()=>{img.style.display='none';fb.style.display='block';};
+})();
 
-// ===== อ่านค่าปัจจุบันแบบเรียลไทม์ =====
-db.ref("current").on("value", (snap) => {
-  const d = snap.val();
-  if (!d) return;
-
-  setCard("ph",    d.ph.toFixed(2), d.ph >= THRESHOLDS.ph.min && d.ph <= THRESHOLDS.ph.max);
-  setCard("tds",   d.tds,           d.tds <= THRESHOLDS.tds.max);
-  setCard("temp",  d.temp.toFixed(1), d.temp <= THRESHOLDS.temp.max);
-  setCard("level", d.level,         d.level >= THRESHOLDS.level.min);
-
-  const dt = new Date(d.time * 1000);
-  document.getElementById("lastUpdate").textContent =
-    "อัปเดตล่าสุด: " + dt.toLocaleString("th-TH");
-  document.getElementById("connStatus").textContent = "เชื่อมต่อ Firebase สำเร็จ ✅";
+/* ================= สลับเมนู / หน้า ================= */
+const titles={
+  dashboard:['ภาพรวมคุณภาพน้ำ','ข้อมูลเรียลไทม์จากเซนเซอร์ในบ่อ'],
+  charts:['กราฟย้อนหลัง','ดูแนวโน้มแต่ละค่าตามช่วงเวลาที่เลือก'],
+  table:['ตารางย้อนหลัง','ค้นหาและตรวจสอบข้อมูลย้อนหลังเป็นตาราง']
+};
+document.querySelectorAll('.nav-item').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const v=btn.dataset.view;
+    document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b===btn));
+    document.querySelectorAll('.view').forEach(s=>s.classList.toggle('active',s.id==='view-'+v));
+    document.getElementById('pageTitle').textContent=titles[v][0];
+    document.getElementById('pageSub').textContent=titles[v][1];
+    closeMenu();
+    if(v==='charts') renderRangeCharts();
+    if(v==='table') renderTable();
+  });
 });
+/* เมนูมือถือ */
+const sidebar=document.getElementById('sidebar'), backdrop=document.getElementById('backdrop');
+function closeMenu(){sidebar.classList.remove('open');backdrop.classList.remove('show');}
+document.getElementById('menuBtn').onclick=()=>{sidebar.classList.add('open');backdrop.classList.add('show');};
+backdrop.onclick=closeMenu;
 
-// ===== กราฟย้อนหลัง =====
-function makeChart(ctx, label, color) {
-  return new Chart(ctx, {
-    type: "line",
-    data: { labels: [], datasets: [{
-      label: label, data: [], borderColor: color,
-      backgroundColor: color + "33", tension: 0.3, pointRadius: 2
-    }]},
-    options: {
-      responsive: true,
-      scales: {
-        x: { ticks: { color: "#94a3b8" } },
-        y: { ticks: { color: "#94a3b8" } }
-      },
-      plugins: { legend: { labels: { color: "#e2e8f0" } } }
+/* ================= Helper กราฟ ================= */
+function baseChart(ctx,label,color){
+  return new Chart(ctx,{
+    type:'line',
+    data:{labels:[],datasets:[{label,data:[],borderColor:color,
+      backgroundColor:color+'22',fill:true,tension:.35,pointRadius:0,borderWidth:2}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#16233c',padding:10,titleFont:{family:'IBM Plex Sans Thai'},bodyFont:{family:'IBM Plex Sans Thai'}}},
+      scales:{
+        x:{ticks:{color:'#8b97ad',maxRotation:0,autoSkip:true,maxTicksLimit:7,font:{size:10}},grid:{color:'rgba(120,140,170,.1)'}},
+        y:{ticks:{color:'#8b97ad',font:{size:10}},grid:{color:'rgba(120,140,170,.12)'}}
+      }
     }
   });
 }
+function spark(ctx,color){
+  return new Chart(ctx,{type:'line',
+    data:{labels:[],datasets:[{data:[],borderColor:color,backgroundColor:color+'22',
+      fill:true,tension:.4,pointRadius:0,borderWidth:1.8}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{enabled:false}},
+      scales:{x:{display:false},y:{display:false}},elements:{line:{borderJoinStyle:'round'}}}});
+}
+const fmtTime = t => new Date(t*1000).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+const fmtFull = t => new Date(t*1000).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'});
 
-const phChart    = makeChart(document.getElementById("phChart"),    "pH",           "#38bdf8");
-const tdsChart   = makeChart(document.getElementById("tdsChart"),   "TDS (ppm)",    "#fbbf24");
-const tempChart  = makeChart(document.getElementById("tempChart"),  "อุณหภูมิ (°C)", "#f87171");
-const levelChart = makeChart(document.getElementById("levelChart"), "ระดับน้ำ (%)",  "#4ade80");
+/* กราฟบนแดชบอร์ด */
+const dTemp=baseChart(document.getElementById('c-temp'),'อุณหภูมิ','#f43f5e');
+const dPh=baseChart(document.getElementById('c-ph'),'pH','#0ea5a4');
+const dTds=baseChart(document.getElementById('c-tds'),'TDS','#f59e0b');
+const dLevel=baseChart(document.getElementById('c-level'),'ระดับน้ำ','#4f74ff');
+/* sparkline */
+const spTemp=spark(document.getElementById('sp-temp'),'#f43f5e');
+const spPh=spark(document.getElementById('sp-ph'),'#0ea5a4');
+const spTds=spark(document.getElementById('sp-tds'),'#f59e0b');
+const spLevel=spark(document.getElementById('sp-level'),'#4f74ff');
+/* กราฟหน้าย้อนหลัง */
+const hTemp=baseChart(document.getElementById('hc-temp'),'อุณหภูมิ','#f43f5e');
+const hPh=baseChart(document.getElementById('hc-ph'),'pH','#0ea5a4');
+const hTds=baseChart(document.getElementById('hc-tds'),'TDS','#f59e0b');
+const hLevel=baseChart(document.getElementById('hc-level'),'ระดับน้ำ','#4f74ff');
 
-// ดึงประวัติ 50 รายการล่าสุด เรียงตามเวลา แล้วอัปเดตกราฟแบบเรียลไทม์
-db.ref("history").limitToLast(50).on("value", (snap) => {
-  const rows = [];
-  snap.forEach((child) => rows.push(child.val()));
+/* ================= ค่าปัจจุบัน (เรียลไทม์) ================= */
+function setBadge(id,ok){const el=document.getElementById(id);el.textContent=ok?'ปกติ':'ผิดปกติ';el.className='badge '+(ok?'ok':'warn');}
+db.ref('current').on('value',snap=>{
+  const d=snap.val(); if(!d) return;
+  const temp=+d.temp, ph=+d.ph, tds=+d.tds, level=+d.level;
 
-  const labels = rows.map(r => new Date(r.time * 1000).toLocaleTimeString("th-TH"));
+  document.getElementById('v-temp').textContent=temp.toFixed(1);
+  document.getElementById('v-ph').textContent=ph.toFixed(2);
+  document.getElementById('v-tds').textContent=Math.round(tds);
+  document.getElementById('v-level').textContent=Math.round(level);
+  setBadge('b-temp',okTemp(temp));setBadge('b-ph',okPh(ph));
+  setBadge('b-tds',okTds(tds));setBadge('b-level',okLevel(level));
 
-  phChart.data.labels    = labels; phChart.data.datasets[0].data    = rows.map(r => r.ph);
-  tdsChart.data.labels   = labels; tdsChart.data.datasets[0].data   = rows.map(r => r.tds);
-  tempChart.data.labels  = labels; tempChart.data.datasets[0].data  = rows.map(r => r.temp);
-  levelChart.data.labels = labels; levelChart.data.datasets[0].data = rows.map(r => r.level);
+  /* hero */
+  document.getElementById('hTemp').textContent=temp.toFixed(1)+'°C';
+  document.getElementById('hPh').textContent=ph.toFixed(2);
+  document.getElementById('hTds').textContent=Math.round(tds)+' ppm';
+  document.getElementById('heroLevel').textContent=Math.round(level)+'%';
+  document.getElementById('waveWrap').style.height=Math.max(6,Math.min(100,level))+'%';
 
-  phChart.update(); tdsChart.update(); tempChart.update(); levelChart.update();
-});
+  const allOk=okTemp(temp)&&okPh(ph)&&okTds(tds)&&okLevel(level);
+  document.getElementById('overallStatus').textContent=allOk?'ปกติ':'เฝ้าระวัง';
+  document.getElementById('overallSub').textContent=allOk
+    ? 'ทุกค่าอยู่ในเกณฑ์ที่เหมาะสมต่อการเพาะเลี้ยงสัตว์น้ำ'
+    : 'มีบางค่าออกนอกเกณฑ์ ควรตรวจสอบบ่อและอุปกรณ์';
 
-db.ref(".info/connected").on("value", (snap) => {
-  if (snap.val() !== true) {
-    document.getElementById("connStatus").textContent = "⚠️ ขาดการเชื่อมต่อ Firebase";
+  if(d.time){
+    const txt='อัปเดตล่าสุด: '+fmtFull(d.time);
+    document.getElementById('lastUpdate').textContent=txt;
   }
 });
-</script>
 
+/* สถานะการเชื่อมต่อ */
+function setLive(on){
+  ['liveDot','liveDot2'].forEach(id=>document.getElementById(id).classList.toggle('on',on));
+  document.getElementById('liveText').textContent=on?'เชื่อมต่อแล้ว':'ขาดการเชื่อมต่อ';
+}
+db.ref('.info/connected').on('value',s=>setLive(s.val()===true));
+
+/* ================= ประวัติ ================= */
+let HISTORY=[];   // ทั้งหมดที่โหลดมา (เรียงเก่า→ใหม่)
+const DASH_N={value:50};
+
+db.ref('history').limitToLast(2000).on('value',snap=>{
+  const rows=[];
+  snap.forEach(c=>{const v=c.val(); if(v && v.time) rows.push(v);});
+  rows.sort((a,b)=>a.time-b.time);
+  HISTORY=rows;
+  updateDashCharts();
+  updateSparks();
+  if(document.getElementById('view-table').classList.contains('active')) renderTable();
+  if(document.getElementById('view-charts').classList.contains('active')) renderRangeCharts();
+});
+
+function updateDashCharts(){
+  const rows=HISTORY.slice(-DASH_N.value);
+  const labels=rows.map(r=>fmtTime(r.time));
+  const set=(ch,key)=>{ch.data.labels=labels;ch.data.datasets[0].data=rows.map(r=>+r[key]);ch.update('none');};
+  set(dTemp,'temp');set(dPh,'ph');set(dTds,'tds');set(dLevel,'level');
+}
+function updateSparks(){
+  const rows=HISTORY.slice(-24);
+  const set=(ch,key)=>{ch.data.labels=rows.map(()=> '');ch.data.datasets[0].data=rows.map(r=>+r[key]);ch.update('none');};
+  set(spTemp,'temp');set(spPh,'ph');set(spTds,'tds');set(spLevel,'level');
+}
+/* ปุ่มเลือกจำนวนจุดบนแดชบอร์ด */
+document.querySelectorAll('#dashRange button').forEach(b=>{
+  b.onclick=()=>{document.querySelectorAll('#dashRange button').forEach(x=>x.classList.toggle('on',x===b));
+    DASH_N.value=+b.dataset.n;updateDashCharts();};
+});
+
+/* ================= ตัวช่วยช่วงเวลา ================= */
+function toTs(v){return v?Math.floor(new Date(v).getTime()/1000):null;}
+function filterRange(from,to){
+  return HISTORY.filter(r=>(from===null||r.time>=from)&&(to===null||r.time<=to));
+}
+function wireRange(fromId,toId,presetSel,onChange){
+  const presets=document.querySelectorAll(presetSel+' .chip-btn');
+  presets.forEach(p=>p.onclick=()=>{
+    presets.forEach(x=>x.classList.toggle('on',x===p));
+    const h=+p.dataset.h;
+    if(h===0){document.getElementById(fromId).value='';document.getElementById(toId).value='';}
+    else{
+      const now=new Date(), from=new Date(now.getTime()-h*3600*1000);
+      const iso=d=>new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+      document.getElementById(fromId).value=iso(from);
+      document.getElementById(toId).value=iso(now);
+    }
+    onChange();
+  });
+}
+
+/* ---------- หน้ากราฟย้อนหลัง ---------- */
+function renderRangeCharts(){
+  const from=toTs(document.getElementById('cFrom').value);
+  const to=toTs(document.getElementById('cTo').value);
+  const rows=filterRange(from,to);
+  const labels=rows.map(r=>rows.length>60?new Date(r.time*1000).toLocaleDateString('th-TH',{day:'2-digit',month:'short'}):fmtFull(r.time));
+  const set=(ch,key)=>{ch.data.labels=labels;ch.data.datasets[0].data=rows.map(r=>+r[key]);ch.update('none');};
+  set(hTemp,'temp');set(hPh,'ph');set(hTds,'tds');set(hLevel,'level');
+  const info=document.getElementById('chartsRangeInfo');
+  info.textContent = rows.length? `พบ ${rows.length} รายการ · ${fmtFull(rows[0].time)} — ${fmtFull(rows[rows.length-1].time)}` : 'ไม่พบข้อมูลในช่วงเวลาที่เลือก';
+}
+document.getElementById('cApply').onclick=()=>{document.querySelectorAll('#cPresets .chip-btn').forEach(x=>x.classList.remove('on'));renderRangeCharts();};
+document.getElementById('cReset').onclick=()=>{document.getElementById('cFrom').value='';document.getElementById('cTo').value='';
+  document.querySelectorAll('#cPresets .chip-btn').forEach(x=>x.classList.toggle('on',x.dataset.h==='0'));renderRangeCharts();};
+wireRange('cFrom','cTo','#cPresets',renderRangeCharts);
+
+/* ---------- หน้าตาราง ---------- */
+const PAGE=15; let page=1; let filtered=[];
+function currentTableRange(){
+  return filterRange(toTs(document.getElementById('tFrom').value),toTs(document.getElementById('tTo').value));
+}
+function renderTable(){
+  filtered=currentTableRange().slice().reverse(); // ใหม่สุดก่อน
+  const pages=Math.max(1,Math.ceil(filtered.length/PAGE));
+  if(page>pages) page=pages;
+  const tbody=document.getElementById('tbody');
+  const empty=document.getElementById('tableEmpty');
+  tbody.innerHTML='';
+  if(!filtered.length){empty.hidden=false;}
+  else{
+    empty.hidden=true;
+    filtered.slice((page-1)*PAGE,page*PAGE).forEach(r=>{
+      const ok=rowOk(r);
+      tbody.insertAdjacentHTML('beforeend',
+        `<tr>
+          <td>${fmtFull(r.time)}</td>
+          <td class="num">${(+r.temp).toFixed(1)}</td>
+          <td class="num">${(+r.ph).toFixed(2)}</td>
+          <td class="num">${Math.round(+r.tds)}</td>
+          <td class="num">${Math.round(+r.level)}</td>
+          <td><span class="tag ${ok?'ok':'bad'}">${ok?'ปกติ':'ผิดปกติ'}</span></td>
+        </tr>`);
+    });
+  }
+  document.getElementById('tableCount').textContent=`ทั้งหมด ${filtered.length} รายการ`;
+  document.getElementById('pageInfo').textContent=`หน้า ${filtered.length?page:0} / ${filtered.length?pages:0}`;
+  document.getElementById('prevPage').disabled=page<=1;
+  document.getElementById('nextPage').disabled=page>=pages||!filtered.length;
+}
+document.getElementById('prevPage').onclick=()=>{if(page>1){page--;renderTable();}};
+document.getElementById('nextPage').onclick=()=>{page++;renderTable();};
+document.getElementById('tApply').onclick=()=>{document.querySelectorAll('#tPresets .chip-btn').forEach(x=>x.classList.remove('on'));page=1;renderTable();};
+document.getElementById('tReset').onclick=()=>{document.getElementById('tFrom').value='';document.getElementById('tTo').value='';
+  document.querySelectorAll('#tPresets .chip-btn').forEach(x=>x.classList.toggle('on',x.dataset.h==='0'));page=1;renderTable();};
+wireRange('tFrom','tTo','#tPresets',()=>{page=1;renderTable();});
+
+/* ส่งออก CSV */
+document.getElementById('csvBtn').onclick=()=>{
+  const rows=currentTableRange();
+  if(!rows.length){alert('ไม่มีข้อมูลในช่วงเวลาที่เลือก');return;}
+  let csv='เวลา,อุณหภูมิ(C),pH,TDS(ppm),ระดับน้ำ(%),สถานะ\n';
+  rows.forEach(r=>{csv+=`"${fmtFull(r.time)}",${(+r.temp).toFixed(1)},${(+r.ph).toFixed(2)},${Math.round(+r.tds)},${Math.round(+r.level)},${rowOk(r)?'ปกติ':'ผิดปกติ'}\n`;});
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='water-quality-'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+};
+</script>
 </body>
 </html>
