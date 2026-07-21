@@ -142,7 +142,7 @@ button{font-family:inherit;cursor:pointer}
 .metric .label{font-size:13px;color:var(--muted);margin-top:14px}
 .metric .value{font-family:"Anuphan";font-weight:700;font-size:30px;margin-top:2px;letter-spacing:.5px}
 .metric .value small{font-size:14px;font-weight:500;color:var(--muted);margin-left:3px}
-.metric .spark{margin-top:8px;height:34px}
+.spark-wrap{position:relative;height:38px;margin-top:10px}
 
 /* ---------- กราฟบนแดชบอร์ด ---------- */
 .section-head{display:flex;align-items:center;justify-content:space-between;margin:6px 2px 14px;gap:12px;flex-wrap:wrap}
@@ -157,7 +157,8 @@ button{font-family:inherit;cursor:pointer}
 }
 .panel .p-title{font-size:14px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:8px}
 .panel .p-title .swatch{width:10px;height:10px;border-radius:3px}
-.panel canvas{max-height:230px}
+.chart-wrap{position:relative;height:240px}
+.panel canvas{max-height:100%}
 
 /* ---------- แถบกรองช่วงเวลา ---------- */
 .filterbar{
@@ -266,7 +267,7 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
 
     <div class="nav-foot">
       <div><span class="dot-live" id="liveDot"></span><span id="liveText">กำลังเชื่อมต่อ…</span></div>
-      <div style="margin-top:8px">ระบบเฝ้าระวังคุณภาพน้ำ IoT<br>Test 1.0.1</div>
+      <div style="margin-top:8px">ระบบเฝ้าระวังคุณภาพน้ำ IoT<br>Test 1.0.2</div>
     </div>
   </aside>
   <div class="backdrop" id="backdrop"></div>
@@ -316,25 +317,25 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
           <div class="head"><div class="ic t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13V5a2 2 0 1 1 4 0v8a4 4 0 1 1-4 0z"/></svg></div><span class="badge ok" id="b-temp">—</span></div>
           <div class="label">อุณหภูมิ</div>
           <div class="value"><span id="v-temp">—</span><small>°C</small></div>
-          <canvas class="spark" id="sp-temp"></canvas>
+          <div class="spark-wrap"><canvas id="sp-temp"></canvas></div>
         </div>
         <div class="metric">
           <div class="head"><div class="ic p"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h4l2 6 4-12 2 6h4"/></svg></div><span class="badge ok" id="b-ph">—</span></div>
           <div class="label">ค่าความเป็นกรด-ด่าง (pH)</div>
           <div class="value"><span id="v-ph">—</span></div>
-          <canvas class="spark" id="sp-ph"></canvas>
+          <div class="spark-wrap"><canvas id="sp-ph"></canvas></div>
         </div>
         <div class="metric">
           <div class="head"><div class="ic d"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="8" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="12" cy="13" r="1.6"/><circle cx="18" cy="14" r="1.6"/><circle cx="8" cy="17" r="1.6"/></svg></div><span class="badge ok" id="b-tds">—</span></div>
           <div class="label">สารละลาย (TDS)</div>
           <div class="value"><span id="v-tds">—</span><small>ppm</small></div>
-          <canvas class="spark" id="sp-tds"></canvas>
+          <div class="spark-wrap"><canvas id="sp-tds"></canvas></div>
         </div>
         <div class="metric">
           <div class="head"><div class="ic l"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2M4 19c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2"/></svg></div><span class="badge ok" id="b-level">—</span></div>
           <div class="label">ระดับน้ำ</div>
           <div class="value"><span id="v-level">—</span><small>%</small></div>
-          <canvas class="spark" id="sp-level"></canvas>
+          <div class="spark-wrap"><canvas id="sp-level"></canvas></div>
         </div>
       </div>
 
@@ -348,10 +349,10 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
         </div>
       </div>
       <div class="charts">
-        <div class="panel"><div class="p-title"><span class="swatch" style="background:#f43f5e"></span>อุณหภูมิ (°C)</div><canvas id="c-temp"></canvas></div>
-        <div class="panel"><div class="p-title"><span class="swatch" style="background:#0ea5a4"></span>pH</div><canvas id="c-ph"></canvas></div>
-        <div class="panel"><div class="p-title"><span class="swatch" style="background:#f59e0b"></span>TDS (ppm)</div><canvas id="c-tds"></canvas></div>
-        <div class="panel"><div class="p-title"><span class="swatch" style="background:#4f74ff"></span>ระดับน้ำ (%)</div><canvas id="c-level"></canvas></div>
+        <div class="panel"><div class="p-title"><span class="swatch" style="background:#f43f5e"></span>อุณหภูมิ (°C)</div><div class="chart-wrap"><canvas id="c-temp"></canvas></div></div>
+        <div class="panel"><div class="p-title"><span class="swatch" style="background:#0ea5a4"></span>pH</div><div class="chart-wrap"><canvas id="c-ph"></canvas></div></div>
+        <div class="panel"><div class="p-title"><span class="swatch" style="background:#f59e0b"></span>TDS (ppm)</div><div class="chart-wrap"><canvas id="c-tds"></canvas></div></div>
+        <div class="panel"><div class="p-title"><span class="swatch" style="background:#4f74ff"></span>ระดับน้ำ (%)</div><div class="chart-wrap"><canvas id="c-level"></canvas></div></div>
       </div>
     </section>
 
@@ -372,10 +373,10 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
       </div>
       <div id="chartsRangeInfo" class="sub" style="margin:-6px 2px 14px;color:var(--muted)"></div>
       <div class="charts">
-        <div class="panel"><div class="p-title"><span class="swatch" style="background:#f43f5e"></span>อุณหภูมิ (°C)</div><canvas id="hc-temp"></canvas></div>
-        <div class="panel"><div class="p-title"><span class="swatch" style="background:#0ea5a4"></span>pH</div><canvas id="hc-ph"></canvas></div>
-        <div class="panel"><div class="p-title"><span class="swatch" style="background:#f59e0b"></span>TDS (ppm)</div><canvas id="hc-tds"></canvas></div>
-        <div class="panel"><div class="p-title"><span class="swatch" style="background:#4f74ff"></span>ระดับน้ำ (%)</div><canvas id="hc-level"></canvas></div>
+        <div class="panel"><div class="p-title"><span class="swatch" style="background:#f43f5e"></span>อุณหภูมิ (°C)</div><div class="chart-wrap"><canvas id="hc-temp"></canvas></div></div>
+        <div class="panel"><div class="p-title"><span class="swatch" style="background:#0ea5a4"></span>pH</div><div class="chart-wrap"><canvas id="hc-ph"></canvas></div></div>
+        <div class="panel"><div class="p-title"><span class="swatch" style="background:#f59e0b"></span>TDS (ppm)</div><div class="chart-wrap"><canvas id="hc-tds"></canvas></div></div>
+        <div class="panel"><div class="p-title"><span class="swatch" style="background:#4f74ff"></span>ระดับน้ำ (%)</div><div class="chart-wrap"><canvas id="hc-level"></canvas></div></div>
       </div>
     </section>
 
