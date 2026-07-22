@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com https://www.gstatic.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https: wss:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>ระบบเฝ้าระวังคุณภาพน้ำ</title>
 <script>try{var _t=localStorage.getItem('wq_theme');document.documentElement.setAttribute('data-theme',_t||'auto');}catch(e){document.documentElement.setAttribute('data-theme','auto');}</script>
@@ -291,7 +291,7 @@ tbody tr:hover{background:var(--row-hover)}
     </div>
     <div class="dfoot">
       <div><span class="dot-live" id="liveDot"></span> <span id="liveText">กำลังเชื่อมต่อ…</span></div>
-      <div>ระบบเฝ้าระวังคุณภาพน้ำ IoT<br>Test V 1.1.1</div>
+      <div>ระบบเฝ้าระวังคุณภาพน้ำ IoT<br>Test V 1.1.2</div>
     </div>
   </aside>
   <div class="backdrop" id="backdrop"></div>
@@ -412,7 +412,7 @@ tbody tr:hover{background:var(--row-hover)}
       </div>
     </section>
 
-    <div class="foot-ver">ระบบเฝ้าระวังคุณภาพน้ำ IoT · Test V 1.1.1</div>
+    <div class="foot-ver">ระบบเฝ้าระวังคุณภาพน้ำ IoT · Test V 1.1.2</div>
   </main>
 </div>
 
@@ -661,11 +661,20 @@ function updateConnection(){
   else{document.getElementById('lastUpdate').textContent='ไม่ได้เชื่อมต่อ · ล่าสุด '+fmtFull(lastTime);document.getElementById('liveText').textContent='ไม่ได้เชื่อมต่อ';}
 }
 setInterval(updateConnection,5000);
+var dbConnected=false;
 db.ref('.info/connected').on('value',function(s){
+  dbConnected=(s.val()===true);
   if(DB_ERR||lastTime!==null)return;
-  if(s.val()===true){document.getElementById('liveText').textContent='เชื่อมต่อฐานข้อมูลแล้ว กำลังอ่าน…';document.getElementById('lastUpdate').textContent='เชื่อมต่อแล้ว กำลังอ่านข้อมูล…';}
+  if(dbConnected){document.getElementById('liveText').textContent='เชื่อมต่อฐานข้อมูลแล้ว กำลังอ่าน…';document.getElementById('lastUpdate').textContent='เชื่อมต่อแล้ว กำลังอ่านข้อมูล…';}
   else{document.getElementById('liveText').textContent='กำลังเชื่อมต่อฐานข้อมูล…';document.getElementById('lastUpdate').textContent='กำลังเชื่อมต่อฐานข้อมูล…';}
 });
+setTimeout(function(){
+  if(lastTime!==null||DB_ERR)return;
+  var msg=dbConnected?'เชื่อมต่อแล้วแต่ยังไม่มีข้อมูลใน current (ตรวจว่า ESP เขียนตรง path และ databaseURL ตรงกัน)':'เชื่อมต่อฐานข้อมูลไม่สำเร็จ อาจถูก Brave Shields หรือเครือข่ายบล็อก ลองปิด Shields หรือใช้เบราว์เซอร์อื่น';
+  document.getElementById('lastUpdate').textContent=msg;
+  document.getElementById('liveText').textContent=dbConnected?'ยังไม่มีข้อมูล':'เชื่อมต่อไม่สำเร็จ';
+  document.getElementById('statusPill').classList.add('off');
+},12000);
 
 var HISTORY=[],DASH_N={value:50};
 db.ref('history').limitToLast(3000).on('value',function(snap){
