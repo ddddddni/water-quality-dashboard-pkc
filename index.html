@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https: wss:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>ระบบเฝ้าระวังคุณภาพน้ำ</title>
 <script>try{var _t=localStorage.getItem('wq_theme');document.documentElement.setAttribute('data-theme',_t||'auto');}catch(e){document.documentElement.setAttribute('data-theme','auto');}</script>
@@ -12,8 +12,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <style>
@@ -160,13 +158,16 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 .hero-metrics{display:flex;gap:12px;margin-top:18px;position:relative;z-index:3;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
 .hero-metrics::-webkit-scrollbar{height:6px}
 .hero-metrics::-webkit-scrollbar-thumb{background:rgba(255,255,255,.4);border-radius:999px}
-.hm{flex:1 0 150px;min-width:150px;scroll-snap-align:start;cursor:pointer;border-radius:18px;padding:14px 16px;background:rgba(255,255,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.3);transition:transform .25s var(--spring), background .3s}
+.hm{flex:1 0 150px;min-width:150px;scroll-snap-align:start;cursor:pointer;border-radius:18px;padding:14px 16px;background:rgba(255,255,255,.22);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);box-shadow:inset 0 1px 0 rgba(255,255,255,.3);transition:transform .25s var(--spring), background .3s}
 .hm.lg-edge::before{border-radius:18px}
 .hm:hover{transform:translateY(-3px)}
 .hm:active{transform:translateY(-1px) scale(.98)}
-.hm.s-safe{background:rgba(45,212,164,.26)}
-.hm.s-warn{background:rgba(251,191,36,.28)}
-.hm.s-danger{background:rgba(251,113,133,.32)}
+.hm.s-safe{background:rgba(41,196,150,.5)}
+.hm.s-warn{background:rgba(233,167,25,.52)}
+.hm.s-danger{background:rgba(233,84,105,.55)}
+.hm.s-safe:hover{background:rgba(41,196,150,.58)}
+.hm.s-warn:hover{background:rgba(233,167,25,.6)}
+.hm.s-danger:hover{background:rgba(233,84,105,.63)}
 .hm-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .hm-label{font-size:12.5px;opacity:.95;display:flex;align-items:center;gap:5px}
 .hm-label svg{width:13px;height:13px;opacity:.8}
@@ -291,7 +292,7 @@ tbody tr:hover{background:var(--row-hover)}
     </div>
     <div class="dfoot">
       <div><span class="dot-live" id="liveDot"></span> <span id="liveText">กำลังเชื่อมต่อ…</span></div>
-      <div>ระบบเฝ้าระวังคุณภาพน้ำ IoT<br>Test V 1.1.2</div>
+      <div>ระบบเฝ้าระวังคุณภาพน้ำ IoT<br>Test V 1.1.4</div>
     </div>
   </aside>
   <div class="backdrop" id="backdrop"></div>
@@ -412,7 +413,7 @@ tbody tr:hover{background:var(--row-hover)}
       </div>
     </section>
 
-    <div class="foot-ver">ระบบเฝ้าระวังคุณภาพน้ำ IoT · Test V 1.1.2</div>
+    <div class="foot-ver">ระบบเฝ้าระวังคุณภาพน้ำ IoT · Test V 1.1.4</div>
   </main>
 </div>
 
@@ -486,17 +487,7 @@ function cssVar(name){return getComputedStyle(document.documentElement).getPrope
   window.addEventListener('mouseout',function(e){if(!e.relatedTarget){mx=-9999;my=-9999;if(!raf)raf=requestAnimationFrame(upd);}});
 })();
 
-var firebaseConfig={
-  apiKey:"AIzaSyD4RJXXmmCgT1JmdkADF5_jEO1Xf8lUT6U",
-  authDomain:"water-monitoring2026.firebaseapp.com",
-  databaseURL:"https://water-monitoring2026-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:"water-monitoring2026",
-  storageBucket:"water-monitoring2026.firebasestorage.app",
-  messagingSenderId:"102072996918",
-  appId:"1:102072996918:web:05b83cad4271f717a57497"
-};
-firebase.initializeApp(firebaseConfig);
-var db=firebase.database();
+var DB_URL="https://water-monitoring2026-default-rtdb.asia-southeast1.firebasedatabase.app";
 
 var AXIS={temp:{min:0,max:60},ph:{min:0,max:14},tds:{min:0,max:1000},level:{min:0,max:100}};
 
@@ -631,9 +622,16 @@ function paint(metric,value){
   return b.level;
 }
 var DB_ERR=false;
-function showDbError(where,err){DB_ERR=true;var code=(err&&err.code)?err.code:((err&&err.message)?err.message:'unknown');document.getElementById('lastUpdate').textContent='อ่านฐานข้อมูลไม่ได้ ('+code+')';document.getElementById('liveText').textContent='อ่านฐานข้อมูลไม่ได้';document.getElementById('statusPill').classList.add('off');document.getElementById('overallSub').textContent='อ่านข้อมูลจาก Firebase ไม่ได้ ('+code+') โปรดตรวจสอบ Database Rules ให้อนุญาต .read';}
-db.ref('current').on('value',function(snap){
-  var d=snap.val();if(!d)return;
+function showDbError(err){
+  DB_ERR=true;
+  var msg=(err&&err.message)?err.message:'ไม่ทราบสาเหตุ';
+  document.getElementById('lastUpdate').textContent='เชื่อมต่อฐานข้อมูลไม่สำเร็จ';
+  document.getElementById('liveText').textContent='เชื่อมต่อไม่สำเร็จ';
+  document.getElementById('statusPill').classList.add('off');
+  document.getElementById('overallSub').textContent='ดึงข้อมูลจากฐานข้อมูลไม่สำเร็จ ('+msg+') หากใช้ Brave ลองปิด Shields สำหรับเว็บนี้ หรือใช้เบราว์เซอร์อื่น';
+}
+function handleCurrent(d){
+  if(!d)return;
   DB_ERR=false;
   var temp=+d.temp,ph=+d.ph,tds=+d.tds,level=+d.level;
   CUR.temp=temp;CUR.ph=ph;CUR.tds=tds;CUR.level=level;
@@ -648,11 +646,13 @@ db.ref('current').on('value',function(snap){
   var subs={safe:'ทุกค่าอยู่ในเกณฑ์มาตรฐานน้ำใช้ทั่วไป',warn:'มีบางค่าควรเฝ้าระวัง แตะการ์ดเพื่อดูรายละเอียด',danger:'มีค่าที่อยู่ในระดับอันตราย ควรตรวจสอบระบบน้ำโดยด่วน'};
   document.getElementById('overallSub').textContent=subs[w];
   lastTime=d.time?+d.time:Math.floor(Date.now()/1000);updateConnection();
-},function(err){showDbError('current',err);});
+}
+function fetchJSON(path){return fetch(DB_URL+path,{cache:'no-store',mode:'cors'}).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();});}
+function fetchCurrent(){fetchJSON('/current.json').then(function(d){if(d){handleCurrent(d);}else{DB_ERR=false;if(lastTime===null){document.getElementById('lastUpdate').textContent='เชื่อมต่อแล้วแต่ยังไม่มีข้อมูลใน current';document.getElementById('liveText').textContent='ยังไม่มีข้อมูล';}}}).catch(function(e){showDbError(e);});}
 function updateConnection(){
   if(DB_ERR)return;
   var pill=document.getElementById('statusPill');
-  if(lastTime===null){document.getElementById('lastUpdate').textContent='รอข้อมูลจากเซนเซอร์…';document.getElementById('liveText').textContent='กำลังเชื่อมต่อ…';return;}
+  if(lastTime===null){document.getElementById('lastUpdate').textContent='กำลังโหลดข้อมูล…';document.getElementById('liveText').textContent='กำลังเชื่อมต่อ…';return;}
   var age=Math.floor(Date.now()/1000)-lastTime,online=age<=OFFLINE_AFTER_SEC;
   document.getElementById('liveDot').classList.toggle('on',online);
   document.getElementById('liveDot2').classList.toggle('on',online);
@@ -660,29 +660,20 @@ function updateConnection(){
   if(online){document.getElementById('lastUpdate').textContent='อัปเดตล่าสุด: '+fmtFull(lastTime);document.getElementById('liveText').textContent='เชื่อมต่อแล้ว';}
   else{document.getElementById('lastUpdate').textContent='ไม่ได้เชื่อมต่อ · ล่าสุด '+fmtFull(lastTime);document.getElementById('liveText').textContent='ไม่ได้เชื่อมต่อ';}
 }
-setInterval(updateConnection,5000);
-var dbConnected=false;
-db.ref('.info/connected').on('value',function(s){
-  dbConnected=(s.val()===true);
-  if(DB_ERR||lastTime!==null)return;
-  if(dbConnected){document.getElementById('liveText').textContent='เชื่อมต่อฐานข้อมูลแล้ว กำลังอ่าน…';document.getElementById('lastUpdate').textContent='เชื่อมต่อแล้ว กำลังอ่านข้อมูล…';}
-  else{document.getElementById('liveText').textContent='กำลังเชื่อมต่อฐานข้อมูล…';document.getElementById('lastUpdate').textContent='กำลังเชื่อมต่อฐานข้อมูล…';}
-});
-setTimeout(function(){
-  if(lastTime!==null||DB_ERR)return;
-  var msg=dbConnected?'เชื่อมต่อแล้วแต่ยังไม่มีข้อมูลใน current (ตรวจว่า ESP เขียนตรง path และ databaseURL ตรงกัน)':'เชื่อมต่อฐานข้อมูลไม่สำเร็จ อาจถูก Brave Shields หรือเครือข่ายบล็อก ลองปิด Shields หรือใช้เบราว์เซอร์อื่น';
-  document.getElementById('lastUpdate').textContent=msg;
-  document.getElementById('liveText').textContent=dbConnected?'ยังไม่มีข้อมูล':'เชื่อมต่อไม่สำเร็จ';
-  document.getElementById('statusPill').classList.add('off');
-},12000);
-
 var HISTORY=[],DASH_N={value:50};
-db.ref('history').limitToLast(3000).on('value',function(snap){
-  var rows=[];snap.forEach(function(c){var v=c.val();if(v&&v.time)rows.push(v);});
+function handleHistory(obj){
+  DB_ERR=false;
+  var rows=[];
+  if(obj){for(var kk in obj){if(Object.prototype.hasOwnProperty.call(obj,kk)){var v=obj[kk];if(v&&v.time)rows.push(v);}}}
   rows.sort(function(a,b){return a.time-b.time;});HISTORY=rows;updateDashCharts();
   if(document.getElementById('view-table').classList.contains('active'))renderTable();
   if(document.getElementById('view-charts').classList.contains('active'))renderRangeCharts();
-},function(err){showDbError('history',err);});
+}
+function fetchHistory(){fetchJSON('/history.json?orderBy=%22%24key%22&limitToLast=3000').then(function(o){handleHistory(o);}).catch(function(e){showDbError(e);});}
+fetchCurrent();fetchHistory();
+setInterval(fetchCurrent,4000);
+setInterval(fetchHistory,10000);
+setInterval(updateConnection,5000);
 function updateDashCharts(){
   var rows=HISTORY.slice(-DASH_N.value),labels=rows.map(function(r){return fmtTime(r.time);});
   function set(ch,k){ch.data.labels=labels;ch.data.datasets[0].data=rows.map(function(r){return +r[k];});ch.update('none');}
