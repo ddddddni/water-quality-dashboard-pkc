@@ -291,7 +291,7 @@ tbody tr:hover{background:var(--row-hover)}
     </div>
     <div class="dfoot">
       <div><span class="dot-live" id="liveDot"></span> <span id="liveText">กำลังเชื่อมต่อ…</span></div>
-      <div>ระบบเฝ้าระวังคุณภาพน้ำ IoT<br>Test V 1.1.0</div>
+      <div>ระบบเฝ้าระวังคุณภาพน้ำ IoT<br>Test V 1.1.1</div>
     </div>
   </aside>
   <div class="backdrop" id="backdrop"></div>
@@ -412,7 +412,7 @@ tbody tr:hover{background:var(--row-hover)}
       </div>
     </section>
 
-    <div class="foot-ver">ระบบเฝ้าระวังคุณภาพน้ำ IoT · Test V 1.1.0</div>
+    <div class="foot-ver">ระบบเฝ้าระวังคุณภาพน้ำ IoT · Test V 1.1.1</div>
   </main>
 </div>
 
@@ -630,8 +630,11 @@ function paint(metric,value){
   var card=document.querySelector('.hm[data-metric="'+metric+'"]');card.classList.remove('s-safe','s-warn','s-danger');card.classList.add('s-'+b.level);
   return b.level;
 }
+var DB_ERR=false;
+function showDbError(where,err){DB_ERR=true;var code=(err&&err.code)?err.code:((err&&err.message)?err.message:'unknown');document.getElementById('lastUpdate').textContent='อ่านฐานข้อมูลไม่ได้ ('+code+')';document.getElementById('liveText').textContent='อ่านฐานข้อมูลไม่ได้';document.getElementById('statusPill').classList.add('off');document.getElementById('overallSub').textContent='อ่านข้อมูลจาก Firebase ไม่ได้ ('+code+') โปรดตรวจสอบ Database Rules ให้อนุญาต .read';}
 db.ref('current').on('value',function(snap){
   var d=snap.val();if(!d)return;
+  DB_ERR=false;
   var temp=+d.temp,ph=+d.ph,tds=+d.tds,level=+d.level;
   CUR.temp=temp;CUR.ph=ph;CUR.tds=tds;CUR.level=level;
   document.getElementById('v-temp').textContent=temp.toFixed(1);
@@ -645,8 +648,9 @@ db.ref('current').on('value',function(snap){
   var subs={safe:'ทุกค่าอยู่ในเกณฑ์มาตรฐานน้ำใช้ทั่วไป',warn:'มีบางค่าควรเฝ้าระวัง แตะการ์ดเพื่อดูรายละเอียด',danger:'มีค่าที่อยู่ในระดับอันตราย ควรตรวจสอบระบบน้ำโดยด่วน'};
   document.getElementById('overallSub').textContent=subs[w];
   lastTime=d.time?+d.time:Math.floor(Date.now()/1000);updateConnection();
-});
+},function(err){showDbError('current',err);});
 function updateConnection(){
+  if(DB_ERR)return;
   var pill=document.getElementById('statusPill');
   if(lastTime===null){document.getElementById('lastUpdate').textContent='รอข้อมูลจากเซนเซอร์…';document.getElementById('liveText').textContent='กำลังเชื่อมต่อ…';return;}
   var age=Math.floor(Date.now()/1000)-lastTime,online=age<=OFFLINE_AFTER_SEC;
@@ -657,6 +661,11 @@ function updateConnection(){
   else{document.getElementById('lastUpdate').textContent='ไม่ได้เชื่อมต่อ · ล่าสุด '+fmtFull(lastTime);document.getElementById('liveText').textContent='ไม่ได้เชื่อมต่อ';}
 }
 setInterval(updateConnection,5000);
+db.ref('.info/connected').on('value',function(s){
+  if(DB_ERR||lastTime!==null)return;
+  if(s.val()===true){document.getElementById('liveText').textContent='เชื่อมต่อฐานข้อมูลแล้ว กำลังอ่าน…';document.getElementById('lastUpdate').textContent='เชื่อมต่อแล้ว กำลังอ่านข้อมูล…';}
+  else{document.getElementById('liveText').textContent='กำลังเชื่อมต่อฐานข้อมูล…';document.getElementById('lastUpdate').textContent='กำลังเชื่อมต่อฐานข้อมูล…';}
+});
 
 var HISTORY=[],DASH_N={value:50};
 db.ref('history').limitToLast(3000).on('value',function(snap){
@@ -664,7 +673,7 @@ db.ref('history').limitToLast(3000).on('value',function(snap){
   rows.sort(function(a,b){return a.time-b.time;});HISTORY=rows;updateDashCharts();
   if(document.getElementById('view-table').classList.contains('active'))renderTable();
   if(document.getElementById('view-charts').classList.contains('active'))renderRangeCharts();
-});
+},function(err){showDbError('history',err);});
 function updateDashCharts(){
   var rows=HISTORY.slice(-DASH_N.value),labels=rows.map(function(r){return fmtTime(r.time);});
   function set(ch,k){ch.data.labels=labels;ch.data.datasets[0].data=rows.map(function(r){return +r[k];});ch.update('none');}
