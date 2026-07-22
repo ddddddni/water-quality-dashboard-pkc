@@ -286,7 +286,7 @@ tbody tr:hover{background:var(--row-hover)}
     </div>
     <div class="dfoot">
       <div><span class="dot-live" id="liveDot"></span> <span id="liveText">กำลังเชื่อมต่อ…</span></div>
-      <div>ระบบเฝ้าระวังคุณภาพน้ำ IoT<br>Test V 1.0.8</div>
+      <div>ระบบเฝ้าระวังคุณภาพน้ำ IoT<br>Test V 1.0.9</div>
     </div>
   </aside>
   <div class="backdrop" id="backdrop"></div>
@@ -407,7 +407,7 @@ tbody tr:hover{background:var(--row-hover)}
       </div>
     </section>
 
-    <div class="foot-ver">ระบบเฝ้าระวังคุณภาพน้ำ IoT · Test V 1.0.8</div>
+    <div class="foot-ver">ระบบเฝ้าระวังคุณภาพน้ำ IoT · Test V 1.0.9</div>
   </main>
 </div>
 
@@ -682,13 +682,13 @@ function wireRange(fromId,toId,presetSel,onChange){
     onChange();
   };})(presets[i]);}
 }
-function aggregate(rows,bucketSec){
-  var map={},order=[];
-  for(var i=0;i<rows.length;i++){var r=rows[i];var key=Math.floor(r.time/bucketSec)*bucketSec;
-    if(!map[key]){map[key]={t:key,temp:0,ph:0,tds:0,level:0,n:0};order.push(key);}
-    var o=map[key];o.temp+=+r.temp;o.ph+=+r.ph;o.tds+=+r.tds;o.level+=+r.level;o.n++;}
-  order.sort(function(a,b){return a-b;});
-  return order.map(function(key){var o=map[key];return {t:o.t,temp:o.temp/o.n,ph:o.ph/o.n,tds:o.tds/o.n,level:o.level/o.n};});
+function keyOf(ts,bucket){var d=new Date(ts*1000);if(bucket===3600){d.setMinutes(0,0,0);}else{d.setHours(0,0,0,0);}return Math.floor(d.getTime()/1000);}
+function buildBuckets(f,tt,bucket){
+  var keys=[];var cur=new Date(f*1000);var end=new Date(tt*1000);
+  if(bucket===3600){cur.setMinutes(0,0,0);end.setMinutes(59,59,999);}else{cur.setHours(0,0,0,0);end.setHours(23,59,59,999);}
+  var guard=0;
+  while(cur.getTime()<=end.getTime()&&guard<100000){keys.push(Math.floor(cur.getTime()/1000));if(bucket===3600){cur.setHours(cur.getHours()+1);}else{cur.setDate(cur.getDate()+1);}guard++;}
+  return keys;
 }
 function renderRangeCharts(){
   var from=toTs(document.getElementById('cFrom').value),to=toTs(document.getElementById('cTo').value);
@@ -698,12 +698,17 @@ function renderRangeCharts(){
   var f=(from!==null)?from:rows[0].time,tt=(to!==null)?to:rows[rows.length-1].time;
   var span=Math.max(1,tt-f);
   var bucket=span<=26*3600?3600:86400;
-  var agg=aggregate(rows,bucket);
-  var labels=agg.map(function(a){return bucket>=86400?fmtDay(a.t):fmtHour(a.t);});
-  function set(ch,k){ch.data.labels=labels;ch.data.datasets[0].data=agg.map(function(a){return Math.round(a[k]*100)/100;});ch.update('none');}
+  var acc={};
+  for(var i=0;i<rows.length;i++){var r=rows[i];var key=keyOf(r.time,bucket);if(!acc[key]){acc[key]={temp:0,ph:0,tds:0,level:0,n:0};}var o=acc[key];o.temp+=+r.temp;o.ph+=+r.ph;o.tds+=+r.tds;o.level+=+r.level;o.n++;}
+  var keys=buildBuckets(f,tt,bucket);
+  var multiDay=keyOf(f,86400)!==keyOf(tt,86400);
+  var labels=keys.map(function(t){if(bucket>=86400)return fmtDay(t);return multiDay?fmtHour(t):new Date(t*1000).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});});
+  function series(k){return keys.map(function(t){var o=acc[t];return o?Math.round(o[k]/o.n*100)/100:null;});}
+  function set(ch,k){ch.data.labels=labels;ch.data.datasets[0].data=series(k);ch.update('none');}
   set(hTemp,'temp');set(hPh,'ph');set(hTds,'tds');set(hLevel,'level');
   var unit=bucket>=86400?'ต่อวัน':'ต่อชั่วโมง';
-  info.textContent='พบ '+rows.length+' รายการ · สรุปเฉลี่ย'+unit+' '+agg.length+' จุด · '+fmtFull(rows[0].time)+' — '+fmtFull(rows[rows.length-1].time);
+  var winEnd=keys[keys.length-1]+(bucket>=86400?86399:3599);
+  info.textContent='พบ '+rows.length+' รายการ · สรุปเฉลี่ย'+unit+' · แสดงเต็มช่วง '+fmtFull(keys[0])+' — '+fmtFull(winEnd);
 }
 document.getElementById('cApply').onclick=function(){var ps=document.querySelectorAll('#cPresets .chip-btn');for(var x=0;x<ps.length;x++)ps[x].classList.remove('on');renderRangeCharts();};
 document.getElementById('cReset').onclick=function(){document.getElementById('cFrom').value='';document.getElementById('cTo').value='';var ps=document.querySelectorAll('#cPresets .chip-btn');for(var x=0;x<ps.length;x++)ps[x].classList.toggle('on',ps[x].getAttribute('data-h')==='0');renderRangeCharts();};
