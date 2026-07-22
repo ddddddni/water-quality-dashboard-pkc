@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com https://www.gstatic.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>ระบบเฝ้าระวังคุณภาพน้ำ</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,111 +20,84 @@
 @font-face{font-family:"SF Thonburi";src:url("SF_Thonburi_Bold.ttf") format("truetype");font-weight:700;font-style:normal;font-display:swap;}
 
 :root{
-  --bg-1:#e9edfb; --bg-2:#e6f1f8; --bg-3:#e3f4f1;
   --glass:rgba(255,255,255,.5);
   --stroke:rgba(255,255,255,.75);
   --ink:#16233c; --muted:#6a7891; --faint:#95a1b6;
   --accent1:#28c7e6; --accent2:#4f74ff; --indigo:#6366f1;
   --ok:#10b981; --warn:#f59e0b; --bad:#f43f5e;
   --shadow:0 16px 40px -18px rgba(31,45,80,.4);
-  --shadow-sm:0 8px 22px -12px rgba(31,45,80,.35);
   --r:22px;
   --font:"SF Thonburi","IBM Plex Sans Thai",sans-serif;
   --spring:cubic-bezier(.34,1.56,.64,1);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
-body{
-  font-family:var(--font);color:var(--ink);min-height:100vh;
-  background:
-    radial-gradient(620px 320px at 72% -6%, rgba(255,178,222,.32) 0%, transparent 60%),
-    radial-gradient(1100px 600px at 10% -8%, #f2f5ff 0%, transparent 55%),
-    radial-gradient(1000px 700px at 112% 12%, #e2f6f2 0%, transparent 50%),
-    linear-gradient(135deg,var(--bg-1) 0%,var(--bg-2) 46%,var(--bg-3) 100%);
-  background-attachment:fixed;
-}
+body{font-family:var(--font);color:var(--ink);min-height:100vh;background:linear-gradient(135deg,#e9edfb 0%,#e6f1f8 46%,#e3f4f1 100%)}
 h1,h2,h3{font-family:var(--font)}
 button{font-family:inherit;cursor:pointer}
 
-/* ============ LIQUID GLASS (เทคนิคขอบไล่เฉด mask-composite) ============ */
-.liquid-glass{
-  background:rgba(255,255,255,.01);
-  background-blend-mode:luminosity;
-  -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
-  box-shadow:inset 0 1px 1px rgba(255,255,255,.1);
-  position:relative;overflow:hidden;
-}
-.liquid-glass::before{
-  content:"";position:absolute;inset:0;border-radius:inherit;padding:1.4px;pointer-events:none;
-  background:linear-gradient(to bottom,
-    rgba(255,255,255,.45) 0%, rgba(255,255,255,.15) 20%,
-    transparent 42%, transparent 58%,
-    rgba(255,255,255,.15) 80%, rgba(255,255,255,.45) 100%);
-  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
-  -webkit-mask-composite:xor;mask-composite:exclude;
-}
-/* ขอบกระจกเรืองแสง (ไม่แตะพื้นหลัง) สำหรับการ์ด/พาเนล */
-.lg-edge{position:relative}
-.lg-edge::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.4px;pointer-events:none;
-  background:linear-gradient(to bottom,rgba(255,255,255,.55) 0%,rgba(255,255,255,.18) 22%,transparent 46%,transparent 56%,rgba(255,255,255,.18) 80%,rgba(255,255,255,.5) 100%);
+#waterCanvas{position:fixed;inset:0;z-index:-2;display:block;width:100%;height:100%}
+#bgVeil{position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(720px 360px at 72% -6%,rgba(255,178,222,.26),transparent 60%),
+  linear-gradient(135deg,rgba(233,237,251,.5),rgba(227,244,241,.46))}
+
+.liquid-glass{background:rgba(255,255,255,.02);background-blend-mode:luminosity;
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.12);position:relative;overflow:hidden}
+.liquid-glass::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.4px;pointer-events:none;
+  background:linear-gradient(to bottom,rgba(255,255,255,.5) 0%,rgba(255,255,255,.16) 20%,transparent 42%,transparent 58%,rgba(255,255,255,.16) 80%,rgba(255,255,255,.5) 100%);
   -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
   -webkit-mask-composite:xor;mask-composite:exclude}
-/* กระจกฝ้าอ่านง่าย สำหรับพาเนลข้อมูล */
+.lg-edge{position:relative}
+.lg-edge::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.4px;pointer-events:none;
+  background:linear-gradient(to bottom,rgba(255,255,255,.6) 0%,rgba(255,255,255,.2) 22%,transparent 46%,transparent 56%,rgba(255,255,255,.2) 80%,rgba(255,255,255,.55) 100%);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude}
 .glass{background:var(--glass);
   -webkit-backdrop-filter:blur(22px) saturate(165%);backdrop-filter:blur(22px) saturate(165%);
-  border:1px solid var(--stroke);
-  box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.55)}
+  border:1px solid var(--stroke);box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.55)}
 .sheen{position:relative;overflow:hidden}
 .sheen::after{content:"";position:absolute;top:0;left:-60%;width:45%;height:100%;pointer-events:none;
   background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);transform:skewX(-18deg);opacity:0;transition:opacity .2s}
 .sheen:hover::after{opacity:1;animation:sheen 1.1s ease}
 @keyframes sheen{from{left:-60%}to{left:120%}}
 
-/* ============ TOP NAV ============ */
-.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
-  gap:16px;padding:16px 20px;}
-.brand{display:flex;align-items:center;gap:11px;min-width:0}
-.brand .logo{width:40px;height:40px;border-radius:13px;flex:none;display:grid;place-items:center;color:#fff}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 20px}
+.brand{display:flex;align-items:center;gap:11px;min-width:0;background:none;border:none;cursor:pointer}
+.brand .logo{width:40px;height:40px;border-radius:13px;flex:none;display:grid;place-items:center;color:#fff;overflow:hidden}
 .brand .logo::before{border-radius:13px}
 .brand .logo.plain{background:linear-gradient(140deg,var(--accent1),var(--accent2))}
 .brand .logo.has-img{background:#fff}
 .brand .logo img{width:100%;height:100%;object-fit:contain;display:none;border-radius:11px}
-.brand .name{font-weight:700;font-size:15px;line-height:1.12;white-space:nowrap}
+.brand .name{font-weight:700;font-size:15px;line-height:1.12;white-space:nowrap;text-align:left;color:var(--ink)}
 .brand .name small{display:block;font-weight:400;font-size:11px;color:var(--muted)}
+.brand:hover .name{opacity:.75}
 
-.nav-pill{display:flex;align-items:center;gap:4px;padding:5px;border-radius:999px}
-.tab{border:none;background:transparent;color:var(--muted);font-size:13.5px;font-weight:500;
-  padding:9px 18px;border-radius:999px;transition:.25s var(--spring);white-space:nowrap}
+.nav-pill{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:4px;padding:5px;border-radius:999px}
+.tab{border:none;background:transparent;color:var(--muted);font-size:13.5px;font-weight:500;padding:9px 18px;border-radius:999px;transition:.25s var(--spring);white-space:nowrap}
 .tab:hover{color:var(--ink)}
-.tab.active{color:#fff;background:linear-gradient(135deg,var(--accent2),var(--indigo));
-  box-shadow:0 8px 18px -8px rgba(79,116,255,.6)}
+.tab.active{color:#fff;background:linear-gradient(135deg,var(--accent2),var(--indigo));box-shadow:0 8px 18px -8px rgba(79,116,255,.6)}
 
-.top-right{display:flex;align-items:center;gap:10px}
-.avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--ink);flex:none}
-.avatar::before{border-radius:50%}
-.avatar svg{width:20px;height:20px;opacity:.8}
-.menu-btn{display:none;width:42px;height:42px;border-radius:50%;place-items:center;color:var(--ink);position:relative;z-index:50}
+.menu-btn{display:none;width:42px;height:42px;border-radius:50%;place-items:center;color:var(--ink);position:relative;z-index:60}
 .menu-btn::before{border-radius:50%}
 .menu-ic{position:absolute;width:21px;height:21px;transition:.3s var(--spring)}
 .menu-ic.x{opacity:0;transform:rotate(-90deg) scale(0)}
 .menu-btn.open .menu-ic.menu{opacity:0;transform:rotate(90deg) scale(0)}
 .menu-btn.open .menu-ic.x{opacity:1;transform:rotate(0) scale(1)}
 
-/* Mobile overlay menu */
-.mobile-menu{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:30px;background:rgba(8,12,26,.82);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);
-  opacity:0;pointer-events:none;transition:opacity .5s ease-out}
-.mobile-menu.show{opacity:1;pointer-events:auto}
-.mm-inner{display:flex;flex-direction:column;align-items:center;gap:26px;transform:translateY(-32px);transition:transform .5s var(--spring)}
-.mobile-menu.show .mm-inner{transform:none}
-.m-link{background:none;border:none;color:#fff;font-size:24px;font-weight:500;opacity:.75;transition:.2s}
-.m-link.active,.m-link:hover{opacity:1}
-.mm-foot{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:6px;color:rgba(255,255,255,.6);font-size:13px}
-.mm-account{display:flex;align-items:center;gap:8px}
-.mm-account .avatar{width:38px;height:38px;color:#fff}
-.mm-account .avatar svg{opacity:.85}
+.drawer{position:fixed;z-index:50;left:0;top:0;height:100vh;width:266px;transform:translateX(-106%);transition:.32s var(--spring);
+  border-radius:0 26px 26px 0;padding:18px 14px;display:flex;flex-direction:column;gap:6px}
+.drawer.open{transform:none}
+.drawer .brand{padding:8px 6px 16px}
+.dnav{display:flex;flex-direction:column;gap:4px}
+.nav-item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 13px;border:none;border-radius:15px;background:transparent;color:var(--muted);font-size:14.5px;font-weight:500;transition:.2s var(--spring)}
+.nav-item svg{width:20px;height:20px;flex:none}
+.nav-item:hover{background:rgba(255,255,255,.6);color:var(--ink);transform:translateX(2px)}
+.nav-item.active{background:linear-gradient(135deg,var(--accent2),var(--indigo));color:#fff;box-shadow:0 10px 22px -8px rgba(79,116,255,.6)}
+.dfoot{margin-top:auto;font-size:11.5px;color:var(--faint);padding:12px 10px 2px;line-height:1.7}
+.backdrop{display:none;position:fixed;inset:0;background:rgba(20,30,55,.35);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);z-index:40}
+.backdrop.show{display:block}
 
-/* ============ Main ============ */
 .wrap{max-width:1200px;margin:0 auto;padding:6px 20px 46px}
 .content-head{display:flex;justify-content:flex-end;margin-bottom:14px}
 .status-pill{display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border-radius:999px;font-size:13px;color:var(--muted);font-weight:500}
@@ -130,13 +105,11 @@ button{font-family:inherit;cursor:pointer}
 .dot-live{width:8px;height:8px;border-radius:50%;background:var(--bad);display:inline-block;transition:.3s}
 .dot-live.on{background:var(--ok);box-shadow:0 0 0 4px rgba(16,185,129,.18)}
 
-/* ============ Hero ============ */
 .hero{position:relative;overflow:hidden;border-radius:28px;padding:22px 24px;margin-bottom:22px;color:#fff;isolation:isolate;
   background:linear-gradient(135deg,#3aa0f0 0%,#4f74ff 48%,#7367f0 100%);
   box-shadow:0 24px 50px -22px rgba(79,90,220,.8), inset 0 1px 0 rgba(255,255,255,.35)}
 .hero::before{content:"";position:absolute;inset:-20%;z-index:-1;
-  background:radial-gradient(360px 220px at 80% 0%, rgba(255,255,255,.4), transparent 60%),
-             radial-gradient(300px 200px at 15% 110%, rgba(255,255,255,.22), transparent 60%);
+  background:radial-gradient(360px 220px at 80% 0%, rgba(255,255,255,.4), transparent 60%),radial-gradient(300px 200px at 15% 110%, rgba(255,255,255,.22), transparent 60%);
   animation:drift 14s ease-in-out infinite alternate}
 @keyframes drift{from{transform:translate(0,0)}to{transform:translate(-36px,18px)}}
 .hero-label{font-size:13px;opacity:.92;font-weight:500;letter-spacing:.3px;position:relative;z-index:3}
@@ -146,26 +119,30 @@ button{font-family:inherit;cursor:pointer}
 .hero-metrics::-webkit-scrollbar{height:6px}
 .hero-metrics::-webkit-scrollbar-thumb{background:rgba(255,255,255,.4);border-radius:999px}
 .hm{flex:1 0 150px;min-width:150px;scroll-snap-align:start;cursor:pointer;border-radius:18px;padding:14px 16px;
-  background:rgba(255,255,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.3);
-  transition:transform .25s var(--spring), background .2s}
+  background:rgba(255,255,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.3);transition:transform .25s var(--spring), background .3s}
 .hm.lg-edge::before{border-radius:18px}
-.hm:hover{background:rgba(255,255,255,.24);transform:translateY(-3px)}
+.hm:hover{transform:translateY(-3px)}
 .hm:active{transform:translateY(-1px) scale(.98)}
+.hm.s-safe{background:rgba(45,212,164,.26)}
+.hm.s-warn{background:rgba(251,191,36,.28)}
+.hm.s-danger{background:rgba(251,113,133,.32)}
+.hm.s-safe:hover{background:rgba(45,212,164,.34)}
+.hm.s-warn:hover{background:rgba(251,191,36,.36)}
+.hm.s-danger:hover{background:rgba(251,113,133,.4)}
 .hm-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .hm-label{font-size:12.5px;opacity:.95;display:flex;align-items:center;gap:5px}
 .hm-label svg{width:13px;height:13px;opacity:.8}
-.hm-badge{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap;background:rgba(255,255,255,.94)}
+.hm-badge{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap;background:rgba(255,255,255,.95)}
 .hm-badge.ok{color:#059669}.hm-badge.warn{color:#b45309}.hm-badge.danger{color:#dc2626}
 .hm-val{font-weight:700;font-size:30px;margin-top:12px;letter-spacing:.3px;white-space:nowrap}
 .hm-val small{font-size:13px;font-weight:400;opacity:.85;margin-left:3px}
-.hero-hint{position:relative;z-index:3;font-size:11.5px;opacity:.8;margin-top:8px;display:flex;align-items:center;gap:6px}
+.hero-hint{position:relative;z-index:3;font-size:11.5px;opacity:.82;margin-top:8px;display:flex;align-items:center;gap:6px}
 .wave-wrap{position:absolute;left:0;right:0;bottom:0;height:0%;z-index:0;transition:height .9s cubic-bezier(.4,0,.2,1);background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.15))}
 .wave-wrap svg{position:absolute;top:-14px;left:0;width:200%;height:26px}
 .wave-wrap .w1{animation:wave 7s linear infinite;opacity:.5}
 .wave-wrap .w2{animation:wave 11s linear infinite reverse;opacity:.35}
 @keyframes wave{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-/* ============ กราฟ / ตาราง / ฟิลเตอร์ ============ */
 .section-head{display:flex;align-items:center;justify-content:space-between;margin:6px 2px 14px;gap:12px;flex-wrap:wrap}
 .section-head h2{font-size:18px;font-weight:600}
 .seg{display:inline-flex;border-radius:13px;padding:4px;gap:2px}
@@ -183,8 +160,9 @@ button{font-family:inherit;cursor:pointer}
 .field label{font-size:12px;color:var(--muted);font-weight:500;padding-left:2px}
 .field input{font-family:inherit;font-size:14px;color:var(--ink);border:1px solid rgba(120,140,170,.3);background:rgba(255,255,255,.7);border-radius:12px;padding:9px 12px;outline:none;transition:.15s}
 .field input:focus{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(79,116,255,.18)}
-.btn{border:none;border-radius:12px;padding:10px 16px;font-size:13.5px;font-weight:600;background:linear-gradient(135deg,var(--accent2),var(--indigo));color:#fff;box-shadow:0 10px 20px -10px rgba(79,116,255,.6), inset 0 1px 0 rgba(255,255,255,.4);transition:.2s var(--spring)}
+.btn{border:none;border-radius:12px;padding:10px 16px;font-size:13.5px;font-weight:600;background:linear-gradient(135deg,var(--accent2),var(--indigo));color:#fff;box-shadow:0 10px 20px -10px rgba(79,116,255,.6), inset 0 1px 0 rgba(255,255,255,.4);transition:.2s var(--spring);display:inline-flex;align-items:center;gap:7px}
 .btn:hover{transform:translateY(-1px)}.btn:active{transform:scale(.96)}
+.btn svg{width:15px;height:15px}
 .btn.ghost{background:rgba(255,255,255,.75);color:var(--ink);border:1px solid var(--stroke);box-shadow:none}
 .presets{display:flex;gap:7px;flex-wrap:wrap}
 .chip-btn{border:1px solid var(--stroke);background:rgba(255,255,255,.6);color:var(--muted);font-size:12.5px;font-weight:500;padding:8px 13px;border-radius:999px;transition:.2s var(--spring)}
@@ -206,18 +184,17 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
 .pager{display:flex;gap:6px}
 .pager button{border:1px solid var(--stroke);background:rgba(255,255,255,.6);border-radius:10px;padding:7px 12px;font-size:13px;color:var(--ink)}
 .pager button:disabled{opacity:.4;cursor:default}
-.empty{text-align:center;padding:50px 20px;color:var(--muted)}
-.empty .big{font-size:34px;margin-bottom:8px}
+.empty{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:50px 20px;color:var(--muted)}
+.empty svg{width:34px;height:34px;opacity:.5}
 .foot-ver{text-align:center;color:var(--faint);font-size:11.5px;margin-top:26px}
 
 .view{display:none}
 .view.active{display:block;animation:fade .4s var(--spring)}
 @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
-/* ============ Sheet รายละเอียด ============ */
-.sheet-bg{position:fixed;inset:0;z-index:60;background:rgba(20,30,55,.4);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .3s}
+.sheet-bg{position:fixed;inset:0;z-index:70;background:rgba(20,30,55,.4);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .3s}
 .sheet-bg.show{opacity:1;pointer-events:auto}
-.sheet{position:fixed;z-index:61;left:50%;top:50%;width:min(460px,92vw);max-height:86vh;overflow:auto;
+.sheet{position:fixed;z-index:71;left:50%;top:50%;width:min(460px,92vw);max-height:86vh;overflow:auto;
   transform:translate(-50%,-46%) scale(.9);opacity:0;pointer-events:none;border-radius:26px;padding:22px 22px 24px;transition:transform .42s var(--spring),opacity .3s}
 .sheet.show{transform:translate(-50%,-50%) scale(1);opacity:1;pointer-events:auto}
 .sheet-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
@@ -236,7 +213,7 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
 .sheet-note{font-size:11.5px;color:var(--faint);margin-top:10px;line-height:1.55}
 
 @media(max-width:920px){
-  .nav-pill, .top-right .avatar, .content-head .status-pill{display:none}
+  .nav-pill,.content-head .status-pill{display:none}
   .menu-btn{display:grid}
   .charts{grid-template-columns:1fr}
   .content-head{justify-content:center;margin-bottom:12px}
@@ -246,22 +223,23 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
 @media(max-width:520px){.hero-status{font-size:28px}}
 @media(prefers-reduced-motion:reduce){
   .wave-wrap .w1,.wave-wrap .w2,.hero::before{animation:none}
-  .view.active,.sheet,.mobile-menu,.mm-inner{animation:none;transition:opacity .2s}
+  .view.active,.sheet,.drawer{animation:none;transition:opacity .2s}
   .sheen::after{display:none}
 }
 </style>
 </head>
 <body>
+<canvas id="waterCanvas"></canvas>
+<div id="bgVeil"></div>
 
-<!-- ============ TOP NAV ============ -->
 <header class="topbar">
-  <div class="brand">
-    <div class="logo plain liquid-glass" id="logoBox">
+  <button class="brand" data-view="dashboard">
+    <span class="logo plain liquid-glass" id="logoBox">
       <img id="logoImg" src="logo1.png" alt="โลโก้">
       <svg id="logoFallback" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c4 5 6 8.5 6 11a6 6 0 1 1-12 0c0-2.5 2-6 6-11z"/></svg>
-    </div>
-    <div class="name">ระบบเฝ้าระวัง<small>คุณภาพน้ำ</small></div>
-  </div>
+    </span>
+    <span class="name">ระบบเฝ้าระวัง<small>คุณภาพน้ำ</small></span>
+  </button>
 
   <nav class="nav-pill liquid-glass">
     <button class="tab active" data-view="dashboard">แดชบอร์ด</button>
@@ -269,47 +247,42 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
     <button class="tab" data-view="table">ตารางย้อนหลัง</button>
   </nav>
 
-  <div class="top-right">
-    <div class="avatar liquid-glass" title="บัญชี">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3.2"/><path d="M6.5 19a6 6 0 0 1 11 0"/></svg>
-    </div>
-    <button class="menu-btn liquid-glass" id="menuBtn" aria-label="เมนู">
-      <svg class="menu-ic menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-      <svg class="menu-ic x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
-    </button>
-  </div>
+  <button class="menu-btn liquid-glass" id="menuBtn" aria-label="เมนู">
+    <svg class="menu-ic menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    <svg class="menu-ic x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
 </header>
 
-<!-- ============ MOBILE MENU OVERLAY ============ -->
-<div class="mobile-menu" id="mobileMenu">
-  <div class="mm-inner">
-    <button class="m-link active" data-view="dashboard">แดชบอร์ด</button>
-    <button class="m-link" data-view="charts">กราฟย้อนหลัง</button>
-    <button class="m-link" data-view="table">ตารางย้อนหลัง</button>
-    <div class="mm-foot">
-      <div class="mm-account">
-        <div class="avatar liquid-glass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3.2"/><path d="M6.5 19a6 6 0 0 1 11 0"/></svg></div>
-        <span>บัญชี</span>
-      </div>
-      <div><span class="dot-live" id="liveDot"></span> <span id="liveText">กำลังเชื่อมต่อ…</span></div>
-      <div>Test V 1.0.6</div>
-    </div>
+<aside class="drawer glass" id="drawer">
+  <button class="brand" data-view="dashboard">
+    <span class="logo plain" id="logoBox2">
+      <img id="logoImg2" src="logo1.png" alt="โลโก้">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c4 5 6 8.5 6 11a6 6 0 1 1-12 0c0-2.5 2-6 6-11z"/></svg>
+    </span>
+    <span class="name">ระบบเฝ้าระวัง<small>คุณภาพน้ำ</small></span>
+  </button>
+  <nav class="dnav">
+    <button class="nav-item active" data-view="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>แดชบอร์ด</button>
+    <button class="nav-item" data-view="charts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M8 15l3-4 3 3 4-6"/></svg>กราฟย้อนหลัง</button>
+    <button class="nav-item" data-view="table"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M3 14h18M9 4v16"/></svg>ตารางย้อนหลัง</button>
+  </nav>
+  <div class="dfoot">
+    <div><span class="dot-live" id="liveDot"></span> <span id="liveText">กำลังเชื่อมต่อ…</span></div>
+    <div>ระบบเฝ้าระวังคุณภาพน้ำ IoT<br>Test V 1.0.7</div>
   </div>
-</div>
+</aside>
+<div class="backdrop" id="backdrop"></div>
 
-<!-- ============ MAIN ============ -->
 <main class="wrap">
   <div class="content-head">
     <div class="status-pill glass m-show" id="statusPill"><span class="dot-live" id="liveDot2"></span><span id="lastUpdate">กำลังโหลดข้อมูล…</span></div>
   </div>
 
-  <!-- DASHBOARD -->
   <section class="view active" id="view-dashboard">
     <div class="hero">
       <div class="hero-label">สถานะน้ำโดยรวม</div>
       <div class="hero-status" id="overallStatus">—</div>
       <div class="hero-sub" id="overallSub">กำลังโหลดข้อมูลจากเซนเซอร์…</div>
-
       <div class="hero-metrics" id="heroMetrics">
         <div class="hm lg-edge" data-metric="temp" tabindex="0" role="button">
           <div class="hm-top"><span class="hm-label">อุณหภูมิ <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></span><span class="hm-badge ok" id="b-temp">—</span></div>
@@ -328,11 +301,7 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
           <div class="hm-val"><span id="v-level">—</span><small>%</small></div>
         </div>
       </div>
-      <div class="hero-hint">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-        แตะการ์ดเพื่อดูเกณฑ์และคำเตือนของแต่ละค่า
-      </div>
-
+      <div class="hero-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>แตะการ์ดเพื่อดูเกณฑ์และคำเตือนของแต่ละค่า</div>
       <div class="wave-wrap" id="waveWrap">
         <svg class="w1" viewBox="0 0 1200 30" preserveAspectRatio="none"><path d="M0 15 q150 -18 300 0 t300 0 t300 0 t300 0 V30 H0 Z" fill="rgba(255,255,255,.5)"/></svg>
         <svg class="w2" viewBox="0 0 1200 30" preserveAspectRatio="none"><path d="M0 16 q150 16 300 0 t300 0 t300 0 t300 0 V30 H0 Z" fill="rgba(255,255,255,.4)"/></svg>
@@ -355,7 +324,6 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
     </div>
   </section>
 
-  <!-- CHARTS -->
   <section class="view" id="view-charts">
     <div class="filterbar glass">
       <div class="field"><label>ตั้งแต่</label><input type="datetime-local" id="cFrom"></div>
@@ -370,7 +338,7 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
         <button class="chip-btn on" data-h="0">ทั้งหมด</button>
       </div>
     </div>
-    <div id="chartsRangeInfo" class="sub" style="margin:-6px 2px 14px;color:var(--muted);font-size:13px"></div>
+    <div id="chartsRangeInfo" style="margin:-6px 2px 14px;color:var(--muted);font-size:13px"></div>
     <div class="charts">
       <div class="panel glass sheen"><div class="p-title"><span class="swatch" style="background:#f43f5e"></span>อุณหภูมิ (°C)</div><div class="chart-wrap"><canvas id="hc-temp"></canvas></div></div>
       <div class="panel glass sheen"><div class="p-title"><span class="swatch" style="background:#0ea5a4"></span>pH</div><div class="chart-wrap"><canvas id="hc-ph"></canvas></div></div>
@@ -379,7 +347,6 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
     </div>
   </section>
 
-  <!-- TABLE -->
   <section class="view" id="view-table">
     <div class="filterbar glass">
       <div class="field"><label>ตั้งแต่</label><input type="datetime-local" id="tFrom"></div>
@@ -393,7 +360,7 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
         <button class="chip-btn" data-h="720">30 วัน</button>
         <button class="chip-btn on" data-h="0">ทั้งหมด</button>
       </div>
-      <button class="btn ghost" id="csvBtn">⬇ ส่งออก CSV</button>
+      <button class="btn ghost" id="csvBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 11l5 4 5-4M5 21h14"/></svg>ส่งออก CSV</button>
     </div>
     <div class="tablecard glass">
       <div class="table-scroll">
@@ -402,7 +369,7 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
           <tbody id="tbody"></tbody>
         </table>
       </div>
-      <div id="tableEmpty" class="empty" hidden><div class="big">🫗</div>ไม่พบข้อมูลในช่วงเวลาที่เลือก</div>
+      <div id="tableEmpty" class="empty" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>ไม่พบข้อมูลในช่วงเวลาที่เลือก</div>
       <div class="tablefoot">
         <div id="tableCount">—</div>
         <div class="pager">
@@ -414,161 +381,270 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
     </div>
   </section>
 
-  <div class="foot-ver">ระบบเฝ้าระวังคุณภาพน้ำ IoT · Test V 1.0.6</div>
+  <div class="foot-ver">ระบบเฝ้าระวังคุณภาพน้ำ IoT · Test V 1.0.7</div>
 </main>
 
-<!-- ============ SHEET ============ -->
 <div class="sheet-bg" id="sheetBg"></div>
 <div class="sheet glass" id="sheet" role="dialog" aria-modal="true">
   <div class="sheet-head">
     <div><div class="sheet-title" id="sheetTitle">—</div><div class="sheet-cur" id="sheetCur">—</div></div>
-    <button class="sheet-x" id="sheetX" aria-label="ปิด">✕</button>
+    <button class="sheet-x" id="sheetX" aria-label="ปิด"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
   <div id="sheetBands"></div>
   <div class="sheet-note" id="sheetNote"></div>
 </div>
 
 <script>
-/* ================= Firebase ================= */
-const firebaseConfig = {
-  apiKey: "AIzaSyD4RJXXmmCgT1JmdkADF5_jEO1Xf8lUT6U",
-  authDomain: "water-monitoring2026.firebaseapp.com",
-  databaseURL: "https://water-monitoring2026-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "water-monitoring2026",
-  storageBucket: "water-monitoring2026.firebasestorage.app",
-  messagingSenderId: "102072996918",
-  appId: "1:102072996918:web:05b83cad4271f717a57497"
+(function(){if(self!==top){try{top.location=self.location;}catch(e){document.documentElement.style.display='none';}}})();
+
+(function(){
+  var canvas=document.getElementById('waterCanvas');
+  var gl=canvas.getContext('webgl',{antialias:false,alpha:false,depth:false,stencil:false,premultipliedAlpha:false});
+  if(!gl){canvas.style.display='none';return;}
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var vsrc='attribute vec2 a;void main(){gl_Position=vec4(a,0.0,1.0);}';
+  var fsrc=[
+    'precision highp float;',
+    'uniform vec2 uRes;uniform float uTime;uniform vec2 uMouse;',
+    'float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}',
+    'float vnoise(vec2 p){vec2 i=floor(p);vec2 f=fract(p);vec2 u=f*f*(3.0-2.0*f);',
+    'float a=hash(i);float b=hash(i+vec2(1.0,0.0));float c=hash(i+vec2(0.0,1.0));float d=hash(i+vec2(1.0,1.0));',
+    'return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);}',
+    'float fbm(vec2 p){float v=0.0;float a=0.5;mat2 m=mat2(1.6,1.2,-1.2,1.6);',
+    'for(int i=0;i<5;i++){v+=a*vnoise(p);p=m*p;a*=0.5;}return v;}',
+    'void main(){',
+    'vec2 uv=gl_FragCoord.xy/uRes.xy;',
+    'float ar=uRes.x/uRes.y;',
+    'vec2 p=vec2(uv.x*ar,uv.y);',
+    'vec2 mo=vec2(uMouse.x*ar,uMouse.y);',
+    'float t=uTime*0.05;',
+    'vec2 q=p*2.4;',
+    'q+=0.35*vec2(fbm(q+vec2(0.0,t)),fbm(q+vec2(t,0.0)));',
+    'float dm=distance(p,mo);',
+    'float ripple=sin(dm*26.0-uTime*1.8)*exp(-dm*3.4)*0.06;',
+    'float h=fbm(q+ripple);',
+    'float e=0.0016;',
+    'float hx=fbm(q+vec2(e,0.0)+ripple)-h;',
+    'float hy=fbm(q+vec2(0.0,e)+ripple)-h;',
+    'vec3 n=normalize(vec3(-hx,-hy,e*22.0));',
+    'vec3 L=normalize(vec3((uMouse-0.5)*2.0,1.0));',
+    'float diff=clamp(dot(n,L),0.0,1.0);',
+    'float spec=pow(clamp(dot(reflect(-L,n),vec3(0.0,0.0,1.0)),0.0,1.0),40.0);',
+    'vec3 deep=vec3(0.73,0.85,0.96);',
+    'vec3 shallow=vec3(0.92,0.93,1.0);',
+    'vec3 col=mix(deep,shallow,smoothstep(0.15,0.85,h));',
+    'col+=vec3(1.0)*spec*0.55;',
+    'col=mix(col,vec3(1.0),diff*0.12);',
+    'col+=pow(h,3.0)*0.10;',
+    'float glow=exp(-dm*2.2)*0.06;',
+    'col+=glow;',
+    'gl_FragColor=vec4(col,1.0);',
+    '}'
+  ].join('\n');
+  function sh(type,src){var s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);return s;}
+  var prog=gl.createProgram();
+  gl.attachShader(prog,sh(gl.VERTEX_SHADER,vsrc));
+  gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,fsrc));
+  gl.linkProgram(prog);
+  if(!gl.getProgramParameter(prog,gl.LINK_STATUS)){canvas.style.display='none';return;}
+  gl.useProgram(prog);
+  var buf=gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+  var la=gl.getAttribLocation(prog,'a');
+  gl.enableVertexAttribArray(la);
+  gl.vertexAttribPointer(la,2,gl.FLOAT,false,0,0);
+  var uRes=gl.getUniformLocation(prog,'uRes');
+  var uTime=gl.getUniformLocation(prog,'uTime');
+  var uMouse=gl.getUniformLocation(prog,'uMouse');
+  var scale=0.6;
+  function resize(){
+    var w=Math.max(2,Math.floor(window.innerWidth*scale));
+    var h=Math.max(2,Math.floor(window.innerHeight*scale));
+    canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);gl.uniform2f(uRes,w,h);
+  }
+  window.addEventListener('resize',resize);resize();
+  var tgt={x:0.5,y:0.55},cur={x:0.5,y:0.55};
+  window.addEventListener('mousemove',function(ev){tgt.x=ev.clientX/window.innerWidth;tgt.y=1.0-ev.clientY/window.innerHeight;});
+  window.addEventListener('touchmove',function(ev){if(ev.touches&&ev.touches[0]){tgt.x=ev.touches[0].clientX/window.innerWidth;tgt.y=1.0-ev.touches[0].clientY/window.innerHeight;}},{passive:true});
+  var start=performance.now(),last=0,hidden=false;
+  document.addEventListener('visibilitychange',function(){hidden=document.hidden;});
+  function frame(now){
+    if(reduce){cur.x=0.5;cur.y=0.55;gl.uniform2f(uMouse,cur.x,cur.y);gl.uniform1f(uTime,0.0);gl.drawArrays(gl.TRIANGLES,0,3);return;}
+    requestAnimationFrame(frame);
+    if(hidden)return;
+    if(now-last<33)return;
+    last=now;
+    var idle=(now-start)/1000.0;
+    if(!('ontouchstart' in window)){}
+    tgt.x+=Math.sin(idle*0.15)*0.00035;
+    tgt.y+=Math.cos(idle*0.12)*0.00035;
+    cur.x+=(tgt.x-cur.x)*0.05;cur.y+=(tgt.y-cur.y)*0.05;
+    gl.uniform2f(uMouse,cur.x,cur.y);
+    gl.uniform1f(uTime,(now-start)/1000.0);
+    gl.drawArrays(gl.TRIANGLES,0,3);
+  }
+  requestAnimationFrame(frame);
+})();
+
+var firebaseConfig={
+  apiKey:"AIzaSyD4RJXXmmCgT1JmdkADF5_jEO1Xf8lUT6U",
+  authDomain:"water-monitoring2026.firebaseapp.com",
+  databaseURL:"https://water-monitoring2026-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"water-monitoring2026",
+  storageBucket:"water-monitoring2026.firebasestorage.app",
+  messagingSenderId:"102072996918",
+  appId:"1:102072996918:web:05b83cad4271f717a57497"
 };
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+var db=firebase.database();
 
-const AXIS = { temp:{min:0,max:60}, ph:{min:0,max:14}, tds:{min:0,max:1000}, level:{min:0,max:100} };
+var AXIS={temp:{min:0,max:60},ph:{min:0,max:14},tds:{min:0,max:1000},level:{min:0,max:100}};
 
-/* ================= เกณฑ์+รายละเอียด (มาตรฐานน้ำใช้ทั่วไป) ================= */
-const INFO = {
-  temp:{ name:'อุณหภูมิของน้ำ', unit:'°C', fmt:v=>v.toFixed(1),
-    note:'อ้างอิง: WHO แนะนำอุณหภูมิน้ำที่ก๊อกไม่เกิน 25°C เพราะช่วง 20–45°C เอื้อต่อการเจริญของแบคทีเรีย (เช่น Legionella)',
+var INFO={
+  temp:{name:'อุณหภูมิของน้ำ',unit:'°C',fmt:function(v){return v.toFixed(1);},
+    note:'อ้างอิง: WHO แนะนำอุณหภูมิน้ำที่ก๊อกไม่เกิน 25°C เพราะช่วง 20–45°C เอื้อต่อการเจริญของแบคทีเรีย เช่น Legionella',
     bands:[
       {max:15,label:'เย็น (ต่ำกว่า 15°C)',level:'safe',desc:'น้ำเย็น รสชาติดี และจุลินทรีย์เติบโตช้า'},
-      {max:32,label:'ปกติ (15–32°C)',level:'safe',desc:'ใช้งานทั่วไปได้ (WHO แนะนำ ≤25°C เพื่อคุณภาพดีที่สุด)'},
+      {max:32,label:'ปกติ (15–32°C)',level:'safe',desc:'ใช้งานทั่วไปได้ WHO แนะนำ ≤25°C เพื่อคุณภาพดีที่สุด'},
       {max:40,label:'อุ่น (32–40°C)',level:'warn',desc:'อุ่นเกินไป เริ่มเอื้อต่อการเติบโตของแบคทีเรีย และรสชาติแย่ลง'},
       {max:Infinity,label:'ร้อน (มากกว่า 40°C)',level:'danger',desc:'อุณหภูมิสูงมาก คุณภาพน้ำต่ำ เสี่ยงการเติบโตของเชื้อโรคและการลวก'}
     ]},
-  ph:{ name:'ค่าความเป็นกรด–ด่าง (pH)', unit:'', fmt:v=>v.toFixed(2),
-    note:'อ้างอิง: มาตรฐานน้ำใช้ทั่วไป (EPA) แนะนำ pH 6.5–8.5 เพื่อลดการกัดกร่อนและปัญหารสชาติ',
+  ph:{name:'ค่าความเป็นกรด–ด่าง (pH)',unit:'',fmt:function(v){return v.toFixed(2);},
+    note:'อ้างอิง: มาตรฐานน้ำใช้ทั่วไป EPA แนะนำ pH 6.5–8.5 เพื่อลดการกัดกร่อนและปัญหารสชาติ',
     bands:[
-      {max:3,label:'กรดมาก (0.0–2.9)',level:'danger',desc:'น้ำเป็นกรดรุนแรง กัดกร่อนสูงมาก ละลายโลหะหนัก (ตะกั่ว ทองแดง เหล็ก) จากท่อออกมาปนเปื้อน อันตรายต่อผิวหนัง/ดวงตา และไม่ปลอดภัยต่อการบริโภค'},
-      {max:6,label:'กรดน้อย (3.0–5.9)',level:'warn',desc:'น้ำมีฤทธิ์กรด กัดกร่อนท่อและอุปกรณ์ มีรสเปรี้ยว/โลหะ และอาจละลายโลหะหนักปนมาในน้ำ'},
+      {max:3,label:'กรดมาก (0.0–2.9)',level:'danger',desc:'น้ำเป็นกรดรุนแรง กัดกร่อนสูงมาก ละลายโลหะหนัก ตะกั่ว ทองแดง เหล็ก จากท่อออกมาปนเปื้อน อันตรายต่อผิวหนังและดวงตา ไม่ปลอดภัยต่อการบริโภค'},
+      {max:6,label:'กรดน้อย (3.0–5.9)',level:'warn',desc:'น้ำมีฤทธิ์กรด กัดกร่อนท่อและอุปกรณ์ มีรสเปรี้ยวหรือรสโลหะ และอาจละลายโลหะหนักปนมาในน้ำ'},
       {max:7.6,label:'กลาง–ปลอดภัย (6.0–7.5)',level:'safe',desc:'ค่า pH เป็นกลาง อยู่ในช่วงเหมาะสม ปลอดภัยต่อการใช้งานทั่วไป'},
-      {max:11.6,label:'ด่างน้อย (7.6–11.5)',level:'warn',desc:'น้ำมีฤทธิ์ด่าง รสขม/กระด้าง เกิดตะกรันในท่อ และลดประสิทธิภาพการฆ่าเชื้อด้วยคลอรีน'},
+      {max:11.6,label:'ด่างน้อย (7.6–11.5)',level:'warn',desc:'น้ำมีฤทธิ์ด่าง รสขมหรือกระด้าง เกิดตะกรันในท่อ และลดประสิทธิภาพการฆ่าเชื้อด้วยคลอรีน'},
       {max:Infinity,label:'ด่างมาก (11.6–14)',level:'danger',desc:'น้ำเป็นด่างรุนแรง มีฤทธิ์กัด ระคายเคืองผิวหนังและดวงตา ไม่ปลอดภัยต่อการบริโภค'}
     ]},
-  tds:{ name:'สารละลายทั้งหมด (TDS)', unit:'ppm', fmt:v=>Math.round(v),
-    note:'อ้างอิง: WHO จัดว่า TDS < 300 ppm ดีเยี่ยม, EPA กำหนดมาตรฐานน้ำดื่มไม่เกิน 500 ppm',
+  tds:{name:'สารละลายทั้งหมด (TDS)',unit:'ppm',fmt:function(v){return Math.round(v);},
+    note:'อ้างอิง: WHO จัดว่า TDS ต่ำกว่า 300 ppm ดีเยี่ยม EPA กำหนดมาตรฐานน้ำดื่มไม่เกิน 500 ppm',
     bands:[
-      {max:50,label:'บริสุทธิ์มาก (0–50)',level:'warn',desc:'แร่ธาตุน้อยมาก รสจืด/เฝื่อน และน้ำอาจ "กัด" ท่อเพื่อดึงแร่ธาตุออกมา'},
+      {max:50,label:'บริสุทธิ์มาก (0–50)',level:'warn',desc:'แร่ธาตุน้อยมาก รสจืดหรือเฝื่อน และน้ำอาจกัดท่อเพื่อดึงแร่ธาตุออกมา'},
       {max:150,label:'ดีเยี่ยม (50–150)',level:'safe',desc:'ช่วงที่เหมาะที่สุด มีแร่ธาตุพอดี รสชาติดี'},
-      {max:300,label:'ดี (150–300)',level:'safe',desc:'ยังดีมาก (WHO จัดว่าต่ำกว่า 300 ppm ดีเยี่ยม)'},
-      {max:500,label:'ยอมรับได้ (300–500)',level:'safe',desc:'ยังผ่านมาตรฐานน้ำดื่ม (EPA ไม่เกิน 500 ppm)'},
+      {max:300,label:'ดี (150–300)',level:'safe',desc:'ยังดีมาก WHO จัดว่าต่ำกว่า 300 ppm ดีเยี่ยม'},
+      {max:500,label:'ยอมรับได้ (300–500)',level:'safe',desc:'ยังผ่านมาตรฐานน้ำดื่ม EPA ไม่เกิน 500 ppm'},
       {max:1000,label:'สูง (500–1000)',level:'warn',desc:'เกินมาตรฐานน้ำดื่ม รสกร่อย เกิดตะกรัน ควรกรองก่อนใช้'},
-      {max:Infinity,label:'สูงมาก (มากกว่า 1000)',level:'danger',desc:'อาจมีเกลือ/โลหะหนักปนเปื้อนสูง ไม่เหมาะต่อการบริโภค'}
+      {max:Infinity,label:'สูงมาก (มากกว่า 1000)',level:'danger',desc:'อาจมีเกลือหรือโลหะหนักปนเปื้อนสูง ไม่เหมาะต่อการบริโภค'}
     ]},
-  level:{ name:'ระดับน้ำในถัง', unit:'%', fmt:v=>Math.round(v),
-    note:'ตั้งค่าไว้ที่ความสูงน้ำ 20 ซม. = 100% (ค่าเป็นเปอร์เซ็นต์ของถัง)',
+  level:{name:'ระดับน้ำในถัง',unit:'%',fmt:function(v){return Math.round(v);},
+    note:'ตั้งค่าไว้ที่ความสูงน้ำ 20 ซม. เท่ากับ 100% ค่าเป็นเปอร์เซ็นต์ของถัง',
     bands:[
       {max:20,label:'วิกฤต (0–20%)',level:'danger',desc:'น้ำในถังต่ำมาก เสี่ยงน้ำหมด ควรเติมน้ำโดยด่วน'},
       {max:50,label:'ต่ำ (20–50%)',level:'warn',desc:'ระดับน้ำค่อนข้างต่ำ ควรเฝ้าระวังและเตรียมเติมน้ำ'},
       {max:Infinity,label:'ปกติ (50–100%)',level:'safe',desc:'ระดับน้ำเพียงพอต่อการใช้งาน'}
     ]}
 };
-const LEVELWORD={safe:'ปกติ',warn:'เฝ้าระวัง',danger:'อันตราย'};
-const LEVELCLASS={safe:'ok',warn:'warn',danger:'danger'};
-function bandOf(m,v){for(const b of INFO[m].bands){if(v<b.max)return b;}return INFO[m].bands.slice(-1)[0];}
-function worst(ls){return ls.includes('danger')?'danger':ls.includes('warn')?'warn':'safe';}
+var LEVELWORD={safe:'ปกติ',warn:'เฝ้าระวัง',danger:'อันตราย'};
+var LEVELCLASS={safe:'ok',warn:'warn',danger:'danger'};
+var LEVELHEX={safe:'#059669',warn:'#b45309',danger:'#dc2626'};
+function bandOf(m,v){var bs=INFO[m].bands;for(var i=0;i<bs.length;i++){if(v<bs[i].max)return bs[i];}return bs[bs.length-1];}
+function worst(ls){return ls.indexOf('danger')>=0?'danger':ls.indexOf('warn')>=0?'warn':'safe';}
 
-/* ================= โลโก้ ================= */
-(function(){const box=document.getElementById('logoBox'),img=document.getElementById('logoImg'),fb=document.getElementById('logoFallback');
-  img.onload=()=>{img.style.display='block';fb.style.display='none';box.classList.add('has-img');box.classList.remove('plain');};
-  img.onerror=()=>{img.style.display='none';fb.style.display='block';box.classList.add('plain');box.classList.remove('has-img');};})();
+(function(){
+  function bindLogo(boxId,imgId){
+    var box=document.getElementById(boxId),img=document.getElementById(imgId);
+    if(!img)return;
+    img.onload=function(){img.style.display='block';box.classList.add('has-img');box.classList.remove('plain');};
+    img.onerror=function(){img.style.display='none';box.classList.add('plain');box.classList.remove('has-img');};
+  }
+  bindLogo('logoBox','logoImg');bindLogo('logoBox2','logoImg2');
+})();
 
-/* ================= นำทาง ================= */
-const mobileMenu=document.getElementById('mobileMenu'),menuBtn=document.getElementById('menuBtn');
+var drawer=document.getElementById('drawer'),backdrop=document.getElementById('backdrop'),menuBtn=document.getElementById('menuBtn');
 function setView(v){
-  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('active',s.id==='view-'+v));
-  document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
+  var all=document.querySelectorAll('.view');
+  for(var i=0;i<all.length;i++)all[i].classList.toggle('active',all[i].id==='view-'+v);
+  var tabs=document.querySelectorAll('[data-view]');
+  for(var j=0;j<tabs.length;j++)tabs[j].classList.toggle('active',tabs[j].getAttribute('data-view')===v);
   if(v==='charts')renderRangeCharts();
   if(v==='table')renderTable();
 }
-document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{setView(b.dataset.view);closeMenu();}));
-function openMenu(){mobileMenu.classList.add('show');menuBtn.classList.add('open');document.body.style.overflow='hidden';}
-function closeMenu(){mobileMenu.classList.remove('show');menuBtn.classList.remove('open');document.body.style.overflow='';}
-menuBtn.onclick=()=>menuBtn.classList.contains('open')?closeMenu():openMenu();
+var dv=document.querySelectorAll('[data-view]');
+for(var i0=0;i0<dv.length;i0++){dv[i0].addEventListener('click',function(){setView(this.getAttribute('data-view'));closeMenu();});}
+function openMenu(){drawer.classList.add('open');backdrop.classList.add('show');menuBtn.classList.add('open');document.body.style.overflow='hidden';}
+function closeMenu(){drawer.classList.remove('open');backdrop.classList.remove('show');menuBtn.classList.remove('open');document.body.style.overflow='';}
+menuBtn.onclick=function(){menuBtn.classList.contains('open')?closeMenu():openMenu();};
+backdrop.onclick=closeMenu;
 
-/* ================= Sheet ================= */
-const CUR={temp:null,ph:null,tds:null,level:null};
-const sheet=document.getElementById('sheet'),sheetBg=document.getElementById('sheetBg');
+var CUR={temp:null,ph:null,tds:null,level:null};
+var sheet=document.getElementById('sheet'),sheetBg=document.getElementById('sheetBg');
 function openSheet(metric){
-  const cfg=INFO[metric],v=CUR[metric];
+  var cfg=INFO[metric],v=CUR[metric];
   document.getElementById('sheetTitle').textContent=cfg.name;
-  const curBand=(v!==null)?bandOf(metric,v):null,curEl=document.getElementById('sheetCur');
-  if(v!==null){curEl.innerHTML='ค่าปัจจุบัน: <b>'+cfg.fmt(v)+(cfg.unit?' '+cfg.unit:'')+'</b> · <span style="font-weight:700;color:'+({safe:'#059669',warn:'#b45309',danger:'#dc2626'}[curBand.level])+'">'+LEVELWORD[curBand.level]+'</span>';}
+  var curBand=(v!==null)?bandOf(metric,v):null,curEl=document.getElementById('sheetCur');
+  if(v!==null){curEl.innerHTML='ค่าปัจจุบัน: <b>'+cfg.fmt(v)+(cfg.unit?' '+cfg.unit:'')+'</b> · <span style="font-weight:700;color:'+LEVELHEX[curBand.level]+'">'+LEVELWORD[curBand.level]+'</span>';}
   else curEl.textContent='ยังไม่มีข้อมูล';
-  document.getElementById('sheetBands').innerHTML=cfg.bands.map(b=>{const cur=(curBand===b)?'cur':'';
-    return '<div class="band '+b.level+' '+cur+'"><span class="band-dot"></span><div><div class="band-label">'+b.label+(cur?' <em>ค่าปัจจุบัน</em>':'')+'</div><div class="band-desc">'+b.desc+'</div></div></div>';}).join('');
+  var html='';
+  for(var i=0;i<cfg.bands.length;i++){var b=cfg.bands[i];var cur=(curBand===b)?'cur':'';
+    html+='<div class="band '+b.level+' '+cur+'"><span class="band-dot"></span><div><div class="band-label">'+b.label+(cur?' <em>ค่าปัจจุบัน</em>':'')+'</div><div class="band-desc">'+b.desc+'</div></div></div>';}
+  document.getElementById('sheetBands').innerHTML=html;
   document.getElementById('sheetNote').textContent=cfg.note;
   sheetBg.classList.add('show');sheet.classList.add('show');
 }
 function closeSheet(){sheetBg.classList.remove('show');sheet.classList.remove('show');}
-document.querySelectorAll('.hm').forEach(el=>{
-  el.addEventListener('click',()=>openSheet(el.dataset.metric));
-  el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openSheet(el.dataset.metric);}});
-});
+var hms=document.querySelectorAll('.hm');
+for(var k=0;k<hms.length;k++){
+  (function(el){
+    el.addEventListener('click',function(){openSheet(el.getAttribute('data-metric'));});
+    el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();openSheet(el.getAttribute('data-metric'));}});
+  })(hms[k]);
+}
 sheetBg.onclick=closeSheet;document.getElementById('sheetX').onclick=closeSheet;
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSheet();closeMenu();}});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeSheet();closeMenu();}});
 
-/* ================= Chart ================= */
 function baseChart(ctx,label,color,axis){
   return new Chart(ctx,{type:'line',
-    data:{labels:[],datasets:[{label,data:[],borderColor:color,backgroundColor:color+'22',fill:true,tension:.35,pointRadius:0,borderWidth:2}]},
+    data:{labels:[],datasets:[{label:label,data:[],borderColor:color,backgroundColor:color+'22',fill:true,tension:.35,pointRadius:0,borderWidth:2}]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
       plugins:{legend:{display:false},tooltip:{backgroundColor:'#16233c',padding:10,titleFont:{family:'IBM Plex Sans Thai'},bodyFont:{family:'IBM Plex Sans Thai'}}},
       scales:{x:{ticks:{color:'#8b97ad',maxRotation:0,autoSkip:true,maxTicksLimit:7,font:{size:10}},grid:{color:'rgba(120,140,170,.1)'}},
         y:{min:axis.min,max:axis.max,ticks:{color:'#8b97ad',font:{size:10}},grid:{color:'rgba(120,140,170,.12)'}}}}});
 }
-const fmtTime=t=>new Date(t*1000).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
-const fmtFull=t=>new Date(t*1000).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'});
-const dTemp=baseChart(document.getElementById('c-temp'),'อุณหภูมิ','#f43f5e',AXIS.temp);
-const dPh=baseChart(document.getElementById('c-ph'),'pH','#0ea5a4',AXIS.ph);
-const dTds=baseChart(document.getElementById('c-tds'),'TDS','#f59e0b',AXIS.tds);
-const dLevel=baseChart(document.getElementById('c-level'),'ระดับน้ำ','#4f74ff',AXIS.level);
-const hTemp=baseChart(document.getElementById('hc-temp'),'อุณหภูมิ','#f43f5e',AXIS.temp);
-const hPh=baseChart(document.getElementById('hc-ph'),'pH','#0ea5a4',AXIS.ph);
-const hTds=baseChart(document.getElementById('hc-tds'),'TDS','#f59e0b',AXIS.tds);
-const hLevel=baseChart(document.getElementById('hc-level'),'ระดับน้ำ','#4f74ff',AXIS.level);
+function fmtTime(t){return new Date(t*1000).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});}
+function fmtFull(t){return new Date(t*1000).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'});}
+var dTemp=baseChart(document.getElementById('c-temp'),'อุณหภูมิ','#f43f5e',AXIS.temp);
+var dPh=baseChart(document.getElementById('c-ph'),'pH','#0ea5a4',AXIS.ph);
+var dTds=baseChart(document.getElementById('c-tds'),'TDS','#f59e0b',AXIS.tds);
+var dLevel=baseChart(document.getElementById('c-level'),'ระดับน้ำ','#4f74ff',AXIS.level);
+var hTemp=baseChart(document.getElementById('hc-temp'),'อุณหภูมิ','#f43f5e',AXIS.temp);
+var hPh=baseChart(document.getElementById('hc-ph'),'pH','#0ea5a4',AXIS.ph);
+var hTds=baseChart(document.getElementById('hc-tds'),'TDS','#f59e0b',AXIS.tds);
+var hLevel=baseChart(document.getElementById('hc-level'),'ระดับน้ำ','#4f74ff',AXIS.level);
 
-/* ================= ค่าปัจจุบัน + สถานะ ESP ================= */
-const OFFLINE_AFTER_SEC=120;
-let lastTime=null;
-function setBadge(id,m,v){const b=bandOf(m,v);const el=document.getElementById(id);el.textContent=LEVELWORD[b.level];el.className='hm-badge '+LEVELCLASS[b.level];}
-db.ref('current').on('value',snap=>{
-  const d=snap.val();if(!d)return;
-  const temp=+d.temp,ph=+d.ph,tds=+d.tds,level=+d.level;
+var OFFLINE_AFTER_SEC=120;
+var lastTime=null;
+function paint(metric,value){
+  var b=bandOf(metric,value);
+  var badge=document.getElementById('b-'+metric);
+  badge.textContent=LEVELWORD[b.level];badge.className='hm-badge '+LEVELCLASS[b.level];
+  var card=document.querySelector('.hm[data-metric="'+metric+'"]');
+  card.classList.remove('s-safe','s-warn','s-danger');card.classList.add('s-'+b.level);
+  return b.level;
+}
+db.ref('current').on('value',function(snap){
+  var d=snap.val();if(!d)return;
+  var temp=+d.temp,ph=+d.ph,tds=+d.tds,level=+d.level;
   CUR.temp=temp;CUR.ph=ph;CUR.tds=tds;CUR.level=level;
   document.getElementById('v-temp').textContent=temp.toFixed(1);
   document.getElementById('v-ph').textContent=ph.toFixed(2);
   document.getElementById('v-tds').textContent=Math.round(tds);
   document.getElementById('v-level').textContent=Math.round(level);
-  setBadge('b-temp','temp',temp);setBadge('b-ph','ph',ph);setBadge('b-tds','tds',tds);setBadge('b-level','level',level);
+  var lt=paint('temp',temp),lp=paint('ph',ph),ld=paint('tds',tds),ll=paint('level',level);
   document.getElementById('waveWrap').style.height=Math.max(6,Math.min(100,level))+'%';
-  const w=worst([bandOf('temp',temp).level,bandOf('ph',ph).level,bandOf('tds',tds).level,bandOf('level',level).level]);
-  document.getElementById('overallStatus').textContent={safe:'ปกติ',warn:'เฝ้าระวัง',danger:'อันตราย'}[w];
-  document.getElementById('overallSub').textContent={safe:'ทุกค่าอยู่ในเกณฑ์มาตรฐานน้ำใช้ทั่วไป',warn:'มีบางค่าควรเฝ้าระวัง แตะการ์ดเพื่อดูรายละเอียด',danger:'มีค่าที่อยู่ในระดับอันตราย ควรตรวจสอบระบบน้ำโดยด่วน'}[w];
-  lastTime=d.time?+d.time:Math.floor(Date.now()/1000);updateConnection();
+  var w=worst([lt,lp,ld,ll]);
+  document.getElementById('overallStatus').textContent=LEVELWORD[w];
+  var subs={safe:'ทุกค่าอยู่ในเกณฑ์มาตรฐานน้ำใช้ทั่วไป',warn:'มีบางค่าควรเฝ้าระวัง แตะการ์ดเพื่อดูรายละเอียด',danger:'มีค่าที่อยู่ในระดับอันตราย ควรตรวจสอบระบบน้ำโดยด่วน'};
+  document.getElementById('overallSub').textContent=subs[w];
+  lastTime=d.time?+d.time:Math.floor(Date.now()/1000);
+  updateConnection();
 });
 function updateConnection(){
-  const pill=document.getElementById('statusPill');
+  var pill=document.getElementById('statusPill');
   if(lastTime===null){document.getElementById('lastUpdate').textContent='รอข้อมูลจากเซนเซอร์…';document.getElementById('liveText').textContent='กำลังเชื่อมต่อ…';return;}
-  const age=Math.floor(Date.now()/1000)-lastTime,online=age<=OFFLINE_AFTER_SEC;
+  var age=Math.floor(Date.now()/1000)-lastTime,online=age<=OFFLINE_AFTER_SEC;
   document.getElementById('liveDot').classList.toggle('on',online);
   document.getElementById('liveDot2').classList.toggle('on',online);
   pill.classList.toggle('off',!online);
@@ -577,71 +653,75 @@ function updateConnection(){
 }
 setInterval(updateConnection,5000);
 
-/* ================= ประวัติ ================= */
-let HISTORY=[];const DASH_N={value:50};
-db.ref('history').limitToLast(2000).on('value',snap=>{
-  const rows=[];snap.forEach(c=>{const v=c.val();if(v&&v.time)rows.push(v);});
-  rows.sort((a,b)=>a.time-b.time);HISTORY=rows;updateDashCharts();
+var HISTORY=[],DASH_N={value:50};
+db.ref('history').limitToLast(2000).on('value',function(snap){
+  var rows=[];snap.forEach(function(c){var v=c.val();if(v&&v.time)rows.push(v);});
+  rows.sort(function(a,b){return a.time-b.time;});HISTORY=rows;updateDashCharts();
   if(document.getElementById('view-table').classList.contains('active'))renderTable();
   if(document.getElementById('view-charts').classList.contains('active'))renderRangeCharts();
 });
-function updateDashCharts(){const rows=HISTORY.slice(-DASH_N.value),labels=rows.map(r=>fmtTime(r.time));
-  const set=(ch,k)=>{ch.data.labels=labels;ch.data.datasets[0].data=rows.map(r=>+r[k]);ch.update('none');};
-  set(dTemp,'temp');set(dPh,'ph');set(dTds,'tds');set(dLevel,'level');}
-document.querySelectorAll('#dashRange button').forEach(b=>{b.onclick=()=>{document.querySelectorAll('#dashRange button').forEach(x=>x.classList.toggle('on',x===b));DASH_N.value=+b.dataset.n;updateDashCharts();};});
+function updateDashCharts(){
+  var rows=HISTORY.slice(-DASH_N.value),labels=rows.map(function(r){return fmtTime(r.time);});
+  function set(ch,k){ch.data.labels=labels;ch.data.datasets[0].data=rows.map(function(r){return +r[k];});ch.update('none');}
+  set(dTemp,'temp');set(dPh,'ph');set(dTds,'tds');set(dLevel,'level');
+}
+var dsb=document.querySelectorAll('#dashRange button');
+for(var b0=0;b0<dsb.length;b0++){(function(btn){btn.onclick=function(){for(var x=0;x<dsb.length;x++)dsb[x].classList.toggle('on',dsb[x]===btn);DASH_N.value=+btn.getAttribute('data-n');updateDashCharts();};})(dsb[b0]);}
 
-/* ================= ช่วงเวลา ================= */
 function toTs(v){return v?Math.floor(new Date(v).getTime()/1000):null;}
-function filterRange(from,to){return HISTORY.filter(r=>(from===null||r.time>=from)&&(to===null||r.time<=to));}
+function filterRange(from,to){return HISTORY.filter(function(r){return (from===null||r.time>=from)&&(to===null||r.time<=to);});}
 function wireRange(fromId,toId,presetSel,onChange){
-  const presets=document.querySelectorAll(presetSel+' .chip-btn');
-  presets.forEach(p=>p.onclick=()=>{presets.forEach(x=>x.classList.toggle('on',x===p));const h=+p.dataset.h;
+  var presets=document.querySelectorAll(presetSel+' .chip-btn');
+  for(var i=0;i<presets.length;i++){(function(p){p.onclick=function(){
+    for(var x=0;x<presets.length;x++)presets[x].classList.toggle('on',presets[x]===p);
+    var h=+p.getAttribute('data-h');
     if(h===0){document.getElementById(fromId).value='';document.getElementById(toId).value='';}
-    else{const now=new Date(),from=new Date(now.getTime()-h*3600*1000),iso=d=>new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+    else{var now=new Date(),from=new Date(now.getTime()-h*3600*1000);
+      var iso=function(d){return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);};
       document.getElementById(fromId).value=iso(from);document.getElementById(toId).value=iso(now);}
-    onChange();});
+    onChange();
+  };})(presets[i]);}
 }
 function renderRangeCharts(){
-  const from=toTs(document.getElementById('cFrom').value),to=toTs(document.getElementById('cTo').value),rows=filterRange(from,to);
-  const labels=rows.map(r=>rows.length>60?new Date(r.time*1000).toLocaleDateString('th-TH',{day:'2-digit',month:'short'}):fmtFull(r.time));
-  const set=(ch,k)=>{ch.data.labels=labels;ch.data.datasets[0].data=rows.map(r=>+r[k]);ch.update('none');};
+  var from=toTs(document.getElementById('cFrom').value),to=toTs(document.getElementById('cTo').value),rows=filterRange(from,to);
+  var labels=rows.map(function(r){return rows.length>60?new Date(r.time*1000).toLocaleDateString('th-TH',{day:'2-digit',month:'short'}):fmtFull(r.time);});
+  function set(ch,k){ch.data.labels=labels;ch.data.datasets[0].data=rows.map(function(r){return +r[k];});ch.update('none');}
   set(hTemp,'temp');set(hPh,'ph');set(hTds,'tds');set(hLevel,'level');
-  document.getElementById('chartsRangeInfo').textContent=rows.length?`พบ ${rows.length} รายการ · ${fmtFull(rows[0].time)} — ${fmtFull(rows[rows.length-1].time)}`:'ไม่พบข้อมูลในช่วงเวลาที่เลือก';
+  document.getElementById('chartsRangeInfo').textContent=rows.length?('พบ '+rows.length+' รายการ · '+fmtFull(rows[0].time)+' — '+fmtFull(rows[rows.length-1].time)):'ไม่พบข้อมูลในช่วงเวลาที่เลือก';
 }
-document.getElementById('cApply').onclick=()=>{document.querySelectorAll('#cPresets .chip-btn').forEach(x=>x.classList.remove('on'));renderRangeCharts();};
-document.getElementById('cReset').onclick=()=>{document.getElementById('cFrom').value='';document.getElementById('cTo').value='';document.querySelectorAll('#cPresets .chip-btn').forEach(x=>x.classList.toggle('on',x.dataset.h==='0'));renderRangeCharts();};
+document.getElementById('cApply').onclick=function(){var ps=document.querySelectorAll('#cPresets .chip-btn');for(var x=0;x<ps.length;x++)ps[x].classList.remove('on');renderRangeCharts();};
+document.getElementById('cReset').onclick=function(){document.getElementById('cFrom').value='';document.getElementById('cTo').value='';var ps=document.querySelectorAll('#cPresets .chip-btn');for(var x=0;x<ps.length;x++)ps[x].classList.toggle('on',ps[x].getAttribute('data-h')==='0');renderRangeCharts();};
 wireRange('cFrom','cTo','#cPresets',renderRangeCharts);
 
-/* ================= ตาราง ================= */
-const PAGE=15;let page=1;let filtered=[];
+var PAGE=15,page=1,filtered=[];
 function currentTableRange(){return filterRange(toTs(document.getElementById('tFrom').value),toTs(document.getElementById('tTo').value));}
 function rowLevel(r){return worst([bandOf('temp',+r.temp).level,bandOf('ph',+r.ph).level,bandOf('tds',+r.tds).level,bandOf('level',+r.level).level]);}
 function renderTable(){
   filtered=currentTableRange().slice().reverse();
-  const pages=Math.max(1,Math.ceil(filtered.length/PAGE));if(page>pages)page=pages;
-  const tbody=document.getElementById('tbody'),empty=document.getElementById('tableEmpty');tbody.innerHTML='';
+  var pages=Math.max(1,Math.ceil(filtered.length/PAGE));if(page>pages)page=pages;
+  var tbody=document.getElementById('tbody'),empty=document.getElementById('tableEmpty');tbody.innerHTML='';
   if(!filtered.length){empty.hidden=false;}
   else{empty.hidden=true;
-    filtered.slice((page-1)*PAGE,page*PAGE).forEach(r=>{const lv=rowLevel(r),cls=lv==='safe'?'ok':(lv==='danger'?'bad':'warn');
-      tbody.insertAdjacentHTML('beforeend',`<tr><td>${fmtFull(r.time)}</td><td class="num">${(+r.temp).toFixed(1)}</td><td class="num">${(+r.ph).toFixed(2)}</td><td class="num">${Math.round(+r.tds)}</td><td class="num">${Math.round(+r.level)}</td><td><span class="tag ${cls}">${LEVELWORD[lv]}</span></td></tr>`);});
+    var slice=filtered.slice((page-1)*PAGE,page*PAGE);
+    for(var i=0;i<slice.length;i++){var r=slice[i],lv=rowLevel(r),cls=lv==='safe'?'ok':(lv==='danger'?'bad':'warn');
+      tbody.insertAdjacentHTML('beforeend','<tr><td>'+fmtFull(r.time)+'</td><td class="num">'+(+r.temp).toFixed(1)+'</td><td class="num">'+(+r.ph).toFixed(2)+'</td><td class="num">'+Math.round(+r.tds)+'</td><td class="num">'+Math.round(+r.level)+'</td><td><span class="tag '+cls+'">'+LEVELWORD[lv]+'</span></td></tr>');}
   }
-  document.getElementById('tableCount').textContent=`ทั้งหมด ${filtered.length} รายการ`;
-  document.getElementById('pageInfo').textContent=`หน้า ${filtered.length?page:0} / ${filtered.length?pages:0}`;
+  document.getElementById('tableCount').textContent='ทั้งหมด '+filtered.length+' รายการ';
+  document.getElementById('pageInfo').textContent='หน้า '+(filtered.length?page:0)+' / '+(filtered.length?pages:0);
   document.getElementById('prevPage').disabled=page<=1;document.getElementById('nextPage').disabled=page>=pages||!filtered.length;
 }
-document.getElementById('prevPage').onclick=()=>{if(page>1){page--;renderTable();}};
-document.getElementById('nextPage').onclick=()=>{page++;renderTable();};
-document.getElementById('tApply').onclick=()=>{document.querySelectorAll('#tPresets .chip-btn').forEach(x=>x.classList.remove('on'));page=1;renderTable();};
-document.getElementById('tReset').onclick=()=>{document.getElementById('tFrom').value='';document.getElementById('tTo').value='';document.querySelectorAll('#tPresets .chip-btn').forEach(x=>x.classList.toggle('on',x.dataset.h==='0'));page=1;renderTable();};
-wireRange('tFrom','tTo','#tPresets',()=>{page=1;renderTable();});
+document.getElementById('prevPage').onclick=function(){if(page>1){page--;renderTable();}};
+document.getElementById('nextPage').onclick=function(){page++;renderTable();};
+document.getElementById('tApply').onclick=function(){var ps=document.querySelectorAll('#tPresets .chip-btn');for(var x=0;x<ps.length;x++)ps[x].classList.remove('on');page=1;renderTable();};
+document.getElementById('tReset').onclick=function(){document.getElementById('tFrom').value='';document.getElementById('tTo').value='';var ps=document.querySelectorAll('#tPresets .chip-btn');for(var x=0;x<ps.length;x++)ps[x].classList.toggle('on',ps[x].getAttribute('data-h')==='0');page=1;renderTable();};
+wireRange('tFrom','tTo','#tPresets',function(){page=1;renderTable();});
 
-/* ================= CSV ================= */
-document.getElementById('csvBtn').onclick=()=>{
-  const rows=currentTableRange();if(!rows.length){alert('ไม่มีข้อมูลในช่วงเวลาที่เลือก');return;}
-  let csv='เวลา,อุณหภูมิ(C),pH,TDS(ppm),ระดับน้ำ(%),สถานะ\n';
-  rows.forEach(r=>{csv+=`"${fmtFull(r.time)}",${(+r.temp).toFixed(1)},${(+r.ph).toFixed(2)},${Math.round(+r.tds)},${Math.round(+r.level)},${LEVELWORD[rowLevel(r)]}\n`;});
-  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='water-quality-'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+document.getElementById('csvBtn').onclick=function(){
+  var rows=currentTableRange();if(!rows.length){alert('ไม่มีข้อมูลในช่วงเวลาที่เลือก');return;}
+  var csv='เวลา,อุณหภูมิ(C),pH,TDS(ppm),ระดับน้ำ(%),สถานะ\n';
+  for(var i=0;i<rows.length;i++){var r=rows[i];csv+='"'+fmtFull(r.time)+'",'+(+r.temp).toFixed(1)+','+(+r.ph).toFixed(2)+','+Math.round(+r.tds)+','+Math.round(+r.level)+','+LEVELWORD[rowLevel(r)]+'\n';}
+  var blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='water-quality-'+new Date().toISOString().slice(0,10)+'.csv';a.click();
 };
 </script>
 </body>
