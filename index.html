@@ -6,10 +6,11 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com https://www.gstatic.com; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>ระบบเฝ้าระวังคุณภาพน้ำ</title>
+<script>try{var _t=localStorage.getItem('wq_theme');document.documentElement.setAttribute('data-theme',_t||'auto');}catch(e){document.documentElement.setAttribute('data-theme','auto');}</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
@@ -20,94 +21,130 @@
 @font-face{font-family:"SF Thonburi";src:url("SF_Thonburi_Bold.ttf") format("truetype");font-weight:700;font-style:normal;font-display:swap;}
 
 :root{
-  --glass:rgba(255,255,255,.5);
-  --stroke:rgba(255,255,255,.75);
-  --ink:#16233c; --muted:#6a7891; --faint:#95a1b6;
   --accent1:#28c7e6; --accent2:#4f74ff; --indigo:#6366f1;
   --ok:#10b981; --warn:#f59e0b; --bad:#f43f5e;
+  --r:22px; --font:"SF Thonburi","IBM Plex Sans Thai",sans-serif; --spring:cubic-bezier(.34,1.56,.64,1);
+  --ink:#16233c; --muted:#6a7891; --faint:#95a1b6;
+  --glass:rgba(255,255,255,.5); --stroke:rgba(255,255,255,.75);
+  --field-bg:rgba(255,255,255,.7); --field-border:rgba(120,140,170,.3);
+  --chip-bg:rgba(255,255,255,.6); --pager-bg:rgba(255,255,255,.6);
+  --thead-bg:rgba(255,255,255,.4); --row-hover:rgba(255,255,255,.4); --td-border:rgba(120,140,170,.14);
+  --sheet-band:rgba(255,255,255,.45); --sheet-band-cur:rgba(255,255,255,.92); --sheet-x-bg:rgba(255,255,255,.7);
+  --menu-hover:rgba(255,255,255,.6);
   --shadow:0 16px 40px -18px rgba(31,45,80,.4);
-  --r:22px;
-  --font:"SF Thonburi","IBM Plex Sans Thai",sans-serif;
-  --spring:cubic-bezier(.34,1.56,.64,1);
+  --body-grad:linear-gradient(135deg,#e9edfb 0%,#e6f1f8 46%,#e3f4f1 100%);
+  --veil:radial-gradient(720px 360px at 72% -6%,rgba(255,178,222,.26),transparent 60%),linear-gradient(135deg,rgba(233,237,251,.42),rgba(227,244,241,.4));
+  --chart-tick:#8b97ad; --chart-grid:rgba(120,140,170,.12);
+  --c-safe:#047857; --c-warn:#b45309; --c-danger:#b91c1c;
+  --tag-safe-bg:rgba(16,185,129,.15); --tag-warn-bg:rgba(245,158,11,.16); --tag-danger-bg:rgba(244,63,94,.15);
+}
+:root[data-theme="dark"]{
+  --ink:#e9eef7; --muted:#9aa7bd; --faint:#6f7d94;
+  --glass:rgba(28,35,54,.55); --stroke:rgba(255,255,255,.1);
+  --field-bg:rgba(255,255,255,.06); --field-border:rgba(255,255,255,.14);
+  --chip-bg:rgba(255,255,255,.06); --pager-bg:rgba(255,255,255,.06);
+  --thead-bg:rgba(255,255,255,.05); --row-hover:rgba(255,255,255,.05); --td-border:rgba(255,255,255,.08);
+  --sheet-band:rgba(255,255,255,.06); --sheet-band-cur:rgba(255,255,255,.14); --sheet-x-bg:rgba(255,255,255,.08);
+  --menu-hover:rgba(255,255,255,.08);
+  --shadow:0 16px 40px -18px rgba(0,0,0,.6);
+  --body-grad:linear-gradient(135deg,#0f1524 0%,#131a2c 46%,#101a22 100%);
+  --veil:radial-gradient(720px 360px at 72% -6%,rgba(120,90,170,.16),transparent 60%),linear-gradient(135deg,rgba(16,22,38,.34),rgba(12,20,28,.34));
+  --chart-tick:#8592a8; --chart-grid:rgba(160,175,200,.12);
+  --c-safe:#34d399; --c-warn:#fbbf24; --c-danger:#fb7185;
+  --tag-safe-bg:rgba(16,185,129,.2); --tag-warn-bg:rgba(245,158,11,.2); --tag-danger-bg:rgba(244,63,94,.2);
+}
+@media(prefers-color-scheme:dark){
+  :root[data-theme="auto"]{
+    --ink:#e9eef7; --muted:#9aa7bd; --faint:#6f7d94;
+    --glass:rgba(28,35,54,.55); --stroke:rgba(255,255,255,.1);
+    --field-bg:rgba(255,255,255,.06); --field-border:rgba(255,255,255,.14);
+    --chip-bg:rgba(255,255,255,.06); --pager-bg:rgba(255,255,255,.06);
+    --thead-bg:rgba(255,255,255,.05); --row-hover:rgba(255,255,255,.05); --td-border:rgba(255,255,255,.08);
+    --sheet-band:rgba(255,255,255,.06); --sheet-band-cur:rgba(255,255,255,.14); --sheet-x-bg:rgba(255,255,255,.08);
+    --menu-hover:rgba(255,255,255,.08);
+    --shadow:0 16px 40px -18px rgba(0,0,0,.6);
+    --body-grad:linear-gradient(135deg,#0f1524 0%,#131a2c 46%,#101a22 100%);
+    --veil:radial-gradient(720px 360px at 72% -6%,rgba(120,90,170,.16),transparent 60%),linear-gradient(135deg,rgba(16,22,38,.34),rgba(12,20,28,.34));
+    --chart-tick:#8592a8; --chart-grid:rgba(160,175,200,.12);
+    --c-safe:#34d399; --c-warn:#fbbf24; --c-danger:#fb7185;
+    --tag-safe-bg:rgba(16,185,129,.2); --tag-warn-bg:rgba(245,158,11,.2); --tag-danger-bg:rgba(244,63,94,.2);
+  }
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
-body{font-family:var(--font);color:var(--ink);min-height:100vh;background:linear-gradient(135deg,#e9edfb 0%,#e6f1f8 46%,#e3f4f1 100%)}
+body{font-family:var(--font);color:var(--ink);min-height:100vh;background:var(--body-grad);transition:background .4s,color .3s}
 h1,h2,h3{font-family:var(--font)}
-button{font-family:inherit;cursor:pointer}
+button{font-family:inherit;cursor:pointer;color:inherit}
 
 #waterCanvas{position:fixed;inset:0;z-index:-2;display:block;width:100%;height:100%}
-#bgVeil{position:fixed;inset:0;z-index:-1;pointer-events:none;
-  background:radial-gradient(720px 360px at 72% -6%,rgba(255,178,222,.26),transparent 60%),
-  linear-gradient(135deg,rgba(233,237,251,.5),rgba(227,244,241,.46))}
+#bgVeil{position:fixed;inset:0;z-index:-1;pointer-events:none;background:var(--veil);transition:background .4s}
 
-.liquid-glass{background:rgba(255,255,255,.02);background-blend-mode:luminosity;
-  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+.glass{background:var(--glass);-webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);
+  border:1px solid var(--stroke);box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.4)}
+.liquid-glass{background:rgba(255,255,255,.02);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
   box-shadow:inset 0 1px 1px rgba(255,255,255,.12);position:relative;overflow:hidden}
 .liquid-glass::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.4px;pointer-events:none;
   background:linear-gradient(to bottom,rgba(255,255,255,.5) 0%,rgba(255,255,255,.16) 20%,transparent 42%,transparent 58%,rgba(255,255,255,.16) 80%,rgba(255,255,255,.5) 100%);
-  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
-  -webkit-mask-composite:xor;mask-composite:exclude}
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
 .lg-edge{position:relative}
 .lg-edge::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.4px;pointer-events:none;
   background:linear-gradient(to bottom,rgba(255,255,255,.6) 0%,rgba(255,255,255,.2) 22%,transparent 46%,transparent 56%,rgba(255,255,255,.2) 80%,rgba(255,255,255,.55) 100%);
-  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
-  -webkit-mask-composite:xor;mask-composite:exclude}
-.glass{background:var(--glass);
-  -webkit-backdrop-filter:blur(22px) saturate(165%);backdrop-filter:blur(22px) saturate(165%);
-  border:1px solid var(--stroke);box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.55)}
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
 .sheen{position:relative;overflow:hidden}
 .sheen::after{content:"";position:absolute;top:0;left:-60%;width:45%;height:100%;pointer-events:none;
   background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);transform:skewX(-18deg);opacity:0;transition:opacity .2s}
 .sheen:hover::after{opacity:1;animation:sheen 1.1s ease}
 @keyframes sheen{from{left:-60%}to{left:120%}}
 
-.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 20px}
-.brand{display:flex;align-items:center;gap:11px;min-width:0;background:none;border:none;cursor:pointer}
-.brand .logo{width:40px;height:40px;border-radius:13px;flex:none;display:grid;place-items:center;color:#fff;overflow:hidden}
+.app{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
+.sidebar{margin:16px 0 16px 16px;padding:18px 14px;border-radius:26px;display:flex;flex-direction:column;gap:6px;position:sticky;top:16px;height:calc(100vh - 32px);overflow:auto}
+.brand{display:flex;align-items:center;gap:11px;padding:6px 6px 14px;background:none;border:none;cursor:pointer;width:100%}
+.brand .logo{width:42px;height:42px;border-radius:13px;flex:none;display:grid;place-items:center;color:#fff;overflow:hidden}
 .brand .logo::before{border-radius:13px}
 .brand .logo.plain{background:linear-gradient(140deg,var(--accent1),var(--accent2))}
 .brand .logo.has-img{background:#fff}
 .brand .logo img{width:100%;height:100%;object-fit:contain;display:none;border-radius:11px}
-.brand .name{font-weight:700;font-size:15px;line-height:1.12;white-space:nowrap;text-align:left;color:var(--ink)}
-.brand .name small{display:block;font-weight:400;font-size:11px;color:var(--muted)}
-.brand:hover .name{opacity:.75}
+.brand .bname{font-weight:700;font-size:15px;line-height:1.15;text-align:left}
+.brand .bname small{display:block;font-weight:400;font-size:11px;color:var(--muted)}
+.brand:hover .bname{opacity:.75}
+.dnav{display:flex;flex-direction:column;gap:4px;margin-top:2px}
+.nav-item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 13px;border:none;border-radius:15px;background:transparent;color:var(--muted);font-size:14.5px;font-weight:500;transition:.2s var(--spring)}
+.nav-item svg{width:20px;height:20px;flex:none}
+.nav-item:hover{background:var(--menu-hover);color:var(--ink);transform:translateX(2px)}
+.nav-item.active{background:linear-gradient(135deg,var(--accent2),var(--indigo));color:#fff;box-shadow:0 10px 22px -8px rgba(79,116,255,.6)}
+.side-sec{margin-top:14px;padding:0 6px}
+.side-sec .lbl{font-size:11px;color:var(--faint);font-weight:600;letter-spacing:.4px;margin-bottom:7px}
+.theme-switch{display:flex;gap:5px;background:var(--chip-bg);border:1px solid var(--stroke);border-radius:13px;padding:4px}
+.theme-switch button{flex:1;border:none;background:transparent;color:var(--muted);font-size:12px;font-weight:600;padding:8px 4px;border-radius:9px;transition:.2s}
+.theme-switch button.on{background:linear-gradient(135deg,var(--accent2),var(--indigo));color:#fff}
+.dfoot{margin-top:auto;font-size:11.5px;color:var(--faint);padding:14px 8px 2px;line-height:1.7}
+.dot-live{width:8px;height:8px;border-radius:50%;background:var(--bad);display:inline-block;transition:.3s}
+.dot-live.on{background:var(--ok);box-shadow:0 0 0 4px rgba(16,185,129,.18)}
 
-.nav-pill{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:4px;padding:5px;border-radius:999px}
-.tab{border:none;background:transparent;color:var(--muted);font-size:13.5px;font-weight:500;padding:9px 18px;border-radius:999px;transition:.25s var(--spring);white-space:nowrap}
-.tab:hover{color:var(--ink)}
-.tab.active{color:#fff;background:linear-gradient(135deg,var(--accent2),var(--indigo));box-shadow:0 8px 18px -8px rgba(79,116,255,.6)}
-
-.menu-btn{display:none;width:42px;height:42px;border-radius:50%;place-items:center;color:var(--ink);position:relative;z-index:60}
-.menu-btn::before{border-radius:50%}
+.backdrop{display:none;position:fixed;inset:0;background:rgba(10,16,30,.45);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);z-index:40}
+.backdrop.show{display:block}
+.main{min-width:0;padding:16px 24px 46px}
+.topbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.menu-btn{display:none;width:44px;height:44px;border-radius:14px;place-items:center;color:var(--ink);flex:none;position:relative}
+.menu-btn::before{border-radius:14px}
 .menu-ic{position:absolute;width:21px;height:21px;transition:.3s var(--spring)}
 .menu-ic.x{opacity:0;transform:rotate(-90deg) scale(0)}
 .menu-btn.open .menu-ic.menu{opacity:0;transform:rotate(90deg) scale(0)}
 .menu-btn.open .menu-ic.x{opacity:1;transform:rotate(0) scale(1)}
-
-.drawer{position:fixed;z-index:50;left:0;top:0;height:100vh;width:266px;transform:translateX(-106%);transition:.32s var(--spring);
-  border-radius:0 26px 26px 0;padding:18px 14px;display:flex;flex-direction:column;gap:6px}
-.drawer.open{transform:none}
-.drawer .brand{padding:8px 6px 16px}
-.dnav{display:flex;flex-direction:column;gap:4px}
-.nav-item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 13px;border:none;border-radius:15px;background:transparent;color:var(--muted);font-size:14.5px;font-weight:500;transition:.2s var(--spring)}
-.nav-item svg{width:20px;height:20px;flex:none}
-.nav-item:hover{background:rgba(255,255,255,.6);color:var(--ink);transform:translateX(2px)}
-.nav-item.active{background:linear-gradient(135deg,var(--accent2),var(--indigo));color:#fff;box-shadow:0 10px 22px -8px rgba(79,116,255,.6)}
-.dfoot{margin-top:auto;font-size:11.5px;color:var(--faint);padding:12px 10px 2px;line-height:1.7}
-.backdrop{display:none;position:fixed;inset:0;background:rgba(20,30,55,.35);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);z-index:40}
-.backdrop.show{display:block}
-
-.wrap{max-width:1200px;margin:0 auto;padding:6px 20px 46px}
-.content-head{display:flex;justify-content:flex-end;margin-bottom:14px}
-.status-pill{display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border-radius:999px;font-size:13px;color:var(--muted);font-weight:500}
-.status-pill.off{color:#b91c1c}
-.dot-live{width:8px;height:8px;border-radius:50%;background:var(--bad);display:inline-block;transition:.3s}
-.dot-live.on{background:var(--ok);box-shadow:0 0 0 4px rgba(16,185,129,.18)}
+.brandbig{display:flex;align-items:center;gap:12px;background:none;border:none;cursor:pointer;min-width:0}
+.brandbig .blogo{width:40px;height:40px;border-radius:12px;flex:none;display:grid;place-items:center;overflow:hidden;background:#fff}
+.brandbig .blogo.plain{background:linear-gradient(140deg,var(--accent1),var(--accent2));color:#fff}
+.brandbig .blogo img{width:100%;height:100%;object-fit:contain;display:none}
+.wtitle{font-weight:700;white-space:nowrap;font-size:clamp(20px,3.4vw,36px);line-height:1.1;letter-spacing:.5px;
+  background:linear-gradient(90deg,#3aa0f0,#28c7e6,#4f74ff,#6366f1,#28c7e6,#3aa0f0);background-size:300% 100%;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:flow 7s linear infinite}
+.wtitle span{display:inline-block;transition:transform .16s ease-out;will-change:transform}
+@keyframes flow{to{background-position:300% 0}}
+.status-pill{display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border-radius:999px;font-size:13px;color:var(--muted);font-weight:500;margin-left:auto}
+.status-pill.off{color:#e5484d}
 
 .hero{position:relative;overflow:hidden;border-radius:28px;padding:22px 24px;margin-bottom:22px;color:#fff;isolation:isolate;
-  background:linear-gradient(135deg,#3aa0f0 0%,#4f74ff 48%,#7367f0 100%);
-  box-shadow:0 24px 50px -22px rgba(79,90,220,.8), inset 0 1px 0 rgba(255,255,255,.35)}
+  background:linear-gradient(135deg,#3aa0f0 0%,#4f74ff 48%,#7367f0 100%);box-shadow:0 24px 50px -22px rgba(79,90,220,.8), inset 0 1px 0 rgba(255,255,255,.35)}
 .hero::before{content:"";position:absolute;inset:-20%;z-index:-1;
   background:radial-gradient(360px 220px at 80% 0%, rgba(255,255,255,.4), transparent 60%),radial-gradient(300px 200px at 15% 110%, rgba(255,255,255,.22), transparent 60%);
   animation:drift 14s ease-in-out infinite alternate}
@@ -118,17 +155,13 @@ button{font-family:inherit;cursor:pointer}
 .hero-metrics{display:flex;gap:12px;margin-top:18px;position:relative;z-index:3;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
 .hero-metrics::-webkit-scrollbar{height:6px}
 .hero-metrics::-webkit-scrollbar-thumb{background:rgba(255,255,255,.4);border-radius:999px}
-.hm{flex:1 0 150px;min-width:150px;scroll-snap-align:start;cursor:pointer;border-radius:18px;padding:14px 16px;
-  background:rgba(255,255,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.3);transition:transform .25s var(--spring), background .3s}
+.hm{flex:1 0 150px;min-width:150px;scroll-snap-align:start;cursor:pointer;border-radius:18px;padding:14px 16px;background:rgba(255,255,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.3);transition:transform .25s var(--spring), background .3s}
 .hm.lg-edge::before{border-radius:18px}
 .hm:hover{transform:translateY(-3px)}
 .hm:active{transform:translateY(-1px) scale(.98)}
 .hm.s-safe{background:rgba(45,212,164,.26)}
 .hm.s-warn{background:rgba(251,191,36,.28)}
 .hm.s-danger{background:rgba(251,113,133,.32)}
-.hm.s-safe:hover{background:rgba(45,212,164,.34)}
-.hm.s-warn:hover{background:rgba(251,191,36,.36)}
-.hm.s-danger:hover{background:rgba(251,113,133,.4)}
 .hm-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .hm-label{font-size:12.5px;opacity:.95;display:flex;align-items:center;gap:5px}
 .hm-label svg{width:13px;height:13px;opacity:.8}
@@ -158,31 +191,31 @@ button{font-family:inherit;cursor:pointer}
 .filterbar{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:18px;border-radius:20px;padding:16px 18px}
 .field{display:flex;flex-direction:column;gap:6px}
 .field label{font-size:12px;color:var(--muted);font-weight:500;padding-left:2px}
-.field input{font-family:inherit;font-size:14px;color:var(--ink);border:1px solid rgba(120,140,170,.3);background:rgba(255,255,255,.7);border-radius:12px;padding:9px 12px;outline:none;transition:.15s}
+.field input{font-family:inherit;font-size:14px;color:var(--ink);border:1px solid var(--field-border);background:var(--field-bg);border-radius:12px;padding:9px 12px;outline:none;transition:.15s;color-scheme:light dark}
 .field input:focus{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(79,116,255,.18)}
 .btn{border:none;border-radius:12px;padding:10px 16px;font-size:13.5px;font-weight:600;background:linear-gradient(135deg,var(--accent2),var(--indigo));color:#fff;box-shadow:0 10px 20px -10px rgba(79,116,255,.6), inset 0 1px 0 rgba(255,255,255,.4);transition:.2s var(--spring);display:inline-flex;align-items:center;gap:7px}
 .btn:hover{transform:translateY(-1px)}.btn:active{transform:scale(.96)}
 .btn svg{width:15px;height:15px}
-.btn.ghost{background:rgba(255,255,255,.75);color:var(--ink);border:1px solid var(--stroke);box-shadow:none}
+.btn.ghost{background:var(--chip-bg);color:var(--ink);border:1px solid var(--stroke);box-shadow:none}
 .presets{display:flex;gap:7px;flex-wrap:wrap}
-.chip-btn{border:1px solid var(--stroke);background:rgba(255,255,255,.6);color:var(--muted);font-size:12.5px;font-weight:500;padding:8px 13px;border-radius:999px;transition:.2s var(--spring)}
+.chip-btn{border:1px solid var(--stroke);background:var(--chip-bg);color:var(--muted);font-size:12.5px;font-weight:500;padding:8px 13px;border-radius:999px;transition:.2s var(--spring)}
 .chip-btn:hover{color:var(--ink);transform:translateY(-1px)}
 .chip-btn.on{background:linear-gradient(135deg,var(--accent2),var(--indigo));color:#fff;border-color:transparent}
 .spacer{flex:1 1 auto}
 .tablecard{border-radius:var(--r);overflow:hidden}
 .table-scroll{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:640px}
-thead th{text-align:left;font-weight:600;color:var(--muted);font-size:12.5px;padding:14px 18px;background:rgba(255,255,255,.4);position:sticky;top:0;white-space:nowrap}
-tbody td{padding:12px 18px;border-top:1px solid rgba(120,140,170,.14);white-space:nowrap}
-tbody tr:hover{background:rgba(255,255,255,.4)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:660px}
+thead th{text-align:left;font-weight:600;color:var(--muted);font-size:12.5px;padding:14px 18px;background:var(--thead-bg);position:sticky;top:0;white-space:nowrap}
+tbody td{padding:12px 18px;border-top:1px solid var(--td-border);white-space:nowrap;color:var(--ink)}
+tbody tr:hover{background:var(--row-hover)}
 .num{font-variant-numeric:tabular-nums}
 .tag{font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px}
-.tag.ok{color:#047857;background:rgba(16,185,129,.15)}
-.tag.warn{color:#b45309;background:rgba(245,158,11,.16)}
-.tag.bad{color:#b91c1c;background:rgba(244,63,94,.15)}
+.tag.ok{color:var(--c-safe);background:var(--tag-safe-bg)}
+.tag.warn{color:var(--c-warn);background:var(--tag-warn-bg)}
+.tag.bad{color:var(--c-danger);background:var(--tag-danger-bg)}
 .tablefoot{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
 .pager{display:flex;gap:6px}
-.pager button{border:1px solid var(--stroke);background:rgba(255,255,255,.6);border-radius:10px;padding:7px 12px;font-size:13px;color:var(--ink)}
+.pager button{border:1px solid var(--stroke);background:var(--pager-bg);border-radius:10px;padding:7px 12px;font-size:13px;color:var(--ink)}
 .pager button:disabled{opacity:.4;cursor:default}
 .empty{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:50px 20px;color:var(--muted)}
 .empty svg{width:34px;height:34px;opacity:.5}
@@ -192,38 +225,38 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
 .view.active{display:block;animation:fade .4s var(--spring)}
 @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
-.sheet-bg{position:fixed;inset:0;z-index:70;background:rgba(20,30,55,.4);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .3s}
+.sheet-bg{position:fixed;inset:0;z-index:70;background:rgba(10,16,30,.5);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .3s}
 .sheet-bg.show{opacity:1;pointer-events:auto}
-.sheet{position:fixed;z-index:71;left:50%;top:50%;width:min(460px,92vw);max-height:86vh;overflow:auto;
-  transform:translate(-50%,-46%) scale(.9);opacity:0;pointer-events:none;border-radius:26px;padding:22px 22px 24px;transition:transform .42s var(--spring),opacity .3s}
+.sheet{position:fixed;z-index:71;left:50%;top:50%;width:min(460px,92vw);max-height:86vh;overflow:auto;transform:translate(-50%,-46%) scale(.9);opacity:0;pointer-events:none;border-radius:26px;padding:22px 22px 24px;transition:transform .42s var(--spring),opacity .3s}
 .sheet.show{transform:translate(-50%,-50%) scale(1);opacity:1;pointer-events:auto}
 .sheet-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
 .sheet-title{font-weight:700;font-size:20px}
 .sheet-cur{font-size:14px;color:var(--muted);margin-top:3px}
-.sheet-x{width:34px;height:34px;flex:none;border:1px solid var(--stroke);background:rgba(255,255,255,.7);border-radius:50%;color:var(--muted);font-size:15px;display:grid;place-items:center;transition:.2s var(--spring)}
+.sheet-x{width:34px;height:34px;flex:none;border:1px solid var(--stroke);background:var(--sheet-x-bg);border-radius:50%;color:var(--muted);display:grid;place-items:center;transition:.2s var(--spring)}
 .sheet-x:hover{transform:rotate(90deg);color:var(--ink)}
-.band{display:flex;gap:12px;padding:12px 13px;border-radius:15px;margin-bottom:8px;background:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.5);transition:.2s}
-.band.cur{background:rgba(255,255,255,.92);box-shadow:0 8px 20px -10px rgba(31,45,80,.35);transform:scale(1.015)}
+.sheet-x svg{width:14px;height:14px}
+.band{display:flex;gap:12px;padding:12px 13px;border-radius:15px;margin-bottom:8px;background:var(--sheet-band);border:1px solid var(--stroke);transition:.2s}
+.band.cur{background:var(--sheet-band-cur);box-shadow:0 8px 20px -10px rgba(0,0,0,.35);transform:scale(1.015)}
 .band-dot{width:12px;height:12px;border-radius:50%;margin-top:4px;flex:none}
 .band.safe .band-dot{background:var(--ok)}.band.warn .band-dot{background:var(--warn)}.band.danger .band-dot{background:var(--bad)}
 .band-label{font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .band-label em{font-style:normal;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px;background:var(--accent2);color:#fff}
-.band.safe .band-label{color:#047857}.band.warn .band-label{color:#b45309}.band.danger .band-label{color:#b91c1c}
+.band.safe .band-label{color:var(--c-safe)}.band.warn .band-label{color:var(--c-warn)}.band.danger .band-label{color:var(--c-danger)}
 .band-desc{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.5}
 .sheet-note{font-size:11.5px;color:var(--faint);margin-top:10px;line-height:1.55}
 
-@media(max-width:920px){
-  .nav-pill,.content-head .status-pill{display:none}
+@media(max-width:960px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:fixed;z-index:50;left:0;top:0;height:100vh;margin:0;border-radius:0 26px 26px 0;width:270px;transform:translateX(-108%);transition:transform .32s var(--spring)}
+  .sidebar.open{transform:none}
   .menu-btn{display:grid}
   .charts{grid-template-columns:1fr}
-  .content-head{justify-content:center;margin-bottom:12px}
-  .content-head .status-pill.m-show{display:inline-flex}
-  .wrap{padding:6px 14px 46px}
+  .main{padding:14px 14px 46px}
 }
-@media(max-width:520px){.hero-status{font-size:28px}}
+@media(max-width:520px){.hero-status{font-size:28px}.status-pill{margin-left:0}}
 @media(prefers-reduced-motion:reduce){
-  .wave-wrap .w1,.wave-wrap .w2,.hero::before{animation:none}
-  .view.active,.sheet,.drawer{animation:none;transition:opacity .2s}
+  .wave-wrap .w1,.wave-wrap .w2,.hero::before,.wtitle{animation:none}
+  .view.active,.sheet,.sidebar{animation:none;transition:opacity .2s}
   .sheen::after{display:none}
 }
 </style>
@@ -232,163 +265,157 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
 <canvas id="waterCanvas"></canvas>
 <div id="bgVeil"></div>
 
-<header class="topbar">
-  <button class="brand" data-view="dashboard">
-    <span class="logo plain liquid-glass" id="logoBox">
-      <img id="logoImg" src="logo1.png" alt="โลโก้">
-      <svg id="logoFallback" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c4 5 6 8.5 6 11a6 6 0 1 1-12 0c0-2.5 2-6 6-11z"/></svg>
-    </span>
-    <span class="name">ระบบเฝ้าระวัง<small>คุณภาพน้ำ</small></span>
-  </button>
+<div class="app">
+  <aside class="sidebar glass" id="sidebar">
+    <button class="brand" id="brandHome2">
+      <span class="logo plain" id="logoBox2"><img id="logoImg2" src="logo1.png" alt="โลโก้"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c4 5 6 8.5 6 11a6 6 0 1 1-12 0c0-2.5 2-6 6-11z"/></svg></span>
+      <span class="bname">ระบบเฝ้าระวัง<small>คุณภาพน้ำ</small></span>
+    </button>
+    <nav class="dnav">
+      <button class="nav-item active" data-view="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>แดชบอร์ด</button>
+      <button class="nav-item" data-view="charts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M8 15l3-4 3 3 4-6"/></svg>กราฟย้อนหลัง</button>
+      <button class="nav-item" data-view="table"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M3 14h18M9 4v16"/></svg>ตารางย้อนหลัง</button>
+    </nav>
+    <div class="side-sec">
+      <div class="lbl">ธีม</div>
+      <div class="theme-switch" id="themeSwitch">
+        <button data-theme-set="light">สว่าง</button>
+        <button data-theme-set="dark">มืด</button>
+        <button data-theme-set="auto">อัตโนมัติ</button>
+      </div>
+    </div>
+    <div class="dfoot">
+      <div><span class="dot-live" id="liveDot"></span> <span id="liveText">กำลังเชื่อมต่อ…</span></div>
+      <div>ระบบเฝ้าระวังคุณภาพน้ำ IoT<br>Test V 1.0.8</div>
+    </div>
+  </aside>
+  <div class="backdrop" id="backdrop"></div>
 
-  <nav class="nav-pill liquid-glass">
-    <button class="tab active" data-view="dashboard">แดชบอร์ด</button>
-    <button class="tab" data-view="charts">กราฟย้อนหลัง</button>
-    <button class="tab" data-view="table">ตารางย้อนหลัง</button>
-  </nav>
+  <main class="main">
+    <header class="topbar">
+      <button class="menu-btn liquid-glass" id="menuBtn" aria-label="เมนู">
+        <svg class="menu-ic menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <svg class="menu-ic x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <button class="brandbig" id="brandHome">
+        <span class="blogo plain" id="logoBox"><img id="logoImg" src="logo1.png" alt="โลโก้"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c4 5 6 8.5 6 11a6 6 0 1 1-12 0c0-2.5 2-6 6-11z"/></svg></span>
+        <span class="wtitle" id="wtitle">ระบบเฝ้าระวังคุณภาพน้ำ</span>
+      </button>
+      <div class="status-pill glass" id="statusPill"><span class="dot-live" id="liveDot2"></span><span id="lastUpdate">กำลังโหลดข้อมูล…</span></div>
+    </header>
 
-  <button class="menu-btn liquid-glass" id="menuBtn" aria-label="เมนู">
-    <svg class="menu-ic menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-    <svg class="menu-ic x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
-  </button>
-</header>
-
-<aside class="drawer glass" id="drawer">
-  <button class="brand" data-view="dashboard">
-    <span class="logo plain" id="logoBox2">
-      <img id="logoImg2" src="logo1.png" alt="โลโก้">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c4 5 6 8.5 6 11a6 6 0 1 1-12 0c0-2.5 2-6 6-11z"/></svg>
-    </span>
-    <span class="name">ระบบเฝ้าระวัง<small>คุณภาพน้ำ</small></span>
-  </button>
-  <nav class="dnav">
-    <button class="nav-item active" data-view="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>แดชบอร์ด</button>
-    <button class="nav-item" data-view="charts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M8 15l3-4 3 3 4-6"/></svg>กราฟย้อนหลัง</button>
-    <button class="nav-item" data-view="table"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M3 14h18M9 4v16"/></svg>ตารางย้อนหลัง</button>
-  </nav>
-  <div class="dfoot">
-    <div><span class="dot-live" id="liveDot"></span> <span id="liveText">กำลังเชื่อมต่อ…</span></div>
-    <div>ระบบเฝ้าระวังคุณภาพน้ำ IoT<br>Test V 1.0.7</div>
-  </div>
-</aside>
-<div class="backdrop" id="backdrop"></div>
-
-<main class="wrap">
-  <div class="content-head">
-    <div class="status-pill glass m-show" id="statusPill"><span class="dot-live" id="liveDot2"></span><span id="lastUpdate">กำลังโหลดข้อมูล…</span></div>
-  </div>
-
-  <section class="view active" id="view-dashboard">
-    <div class="hero">
-      <div class="hero-label">สถานะน้ำโดยรวม</div>
-      <div class="hero-status" id="overallStatus">—</div>
-      <div class="hero-sub" id="overallSub">กำลังโหลดข้อมูลจากเซนเซอร์…</div>
-      <div class="hero-metrics" id="heroMetrics">
-        <div class="hm lg-edge" data-metric="temp" tabindex="0" role="button">
-          <div class="hm-top"><span class="hm-label">อุณหภูมิ <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></span><span class="hm-badge ok" id="b-temp">—</span></div>
-          <div class="hm-val"><span id="v-temp">—</span><small>°C</small></div>
+    <section class="view active" id="view-dashboard">
+      <div class="hero">
+        <div class="hero-label">สถานะน้ำโดยรวม</div>
+        <div class="hero-status" id="overallStatus">—</div>
+        <div class="hero-sub" id="overallSub">กำลังโหลดข้อมูลจากเซนเซอร์…</div>
+        <div class="hero-metrics" id="heroMetrics">
+          <div class="hm lg-edge" data-metric="temp" tabindex="0" role="button">
+            <div class="hm-top"><span class="hm-label">อุณหภูมิ <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></span><span class="hm-badge ok" id="b-temp">—</span></div>
+            <div class="hm-val"><span id="v-temp">—</span><small>°C</small></div>
+          </div>
+          <div class="hm lg-edge" data-metric="ph" tabindex="0" role="button">
+            <div class="hm-top"><span class="hm-label">pH <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></span><span class="hm-badge ok" id="b-ph">—</span></div>
+            <div class="hm-val"><span id="v-ph">—</span></div>
+          </div>
+          <div class="hm lg-edge" data-metric="tds" tabindex="0" role="button">
+            <div class="hm-top"><span class="hm-label">TDS <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></span><span class="hm-badge ok" id="b-tds">—</span></div>
+            <div class="hm-val"><span id="v-tds">—</span><small>ppm</small></div>
+          </div>
+          <div class="hm lg-edge" data-metric="level" tabindex="0" role="button">
+            <div class="hm-top"><span class="hm-label">ระดับน้ำ <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></span><span class="hm-badge ok" id="b-level">—</span></div>
+            <div class="hm-val"><span id="v-level">—</span><small>%</small></div>
+          </div>
         </div>
-        <div class="hm lg-edge" data-metric="ph" tabindex="0" role="button">
-          <div class="hm-top"><span class="hm-label">pH <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></span><span class="hm-badge ok" id="b-ph">—</span></div>
-          <div class="hm-val"><span id="v-ph">—</span></div>
-        </div>
-        <div class="hm lg-edge" data-metric="tds" tabindex="0" role="button">
-          <div class="hm-top"><span class="hm-label">TDS <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></span><span class="hm-badge ok" id="b-tds">—</span></div>
-          <div class="hm-val"><span id="v-tds">—</span><small>ppm</small></div>
-        </div>
-        <div class="hm lg-edge" data-metric="level" tabindex="0" role="button">
-          <div class="hm-top"><span class="hm-label">ระดับน้ำ <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></span><span class="hm-badge ok" id="b-level">—</span></div>
-          <div class="hm-val"><span id="v-level">—</span><small>%</small></div>
-        </div>
-      </div>
-      <div class="hero-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>แตะการ์ดเพื่อดูเกณฑ์และคำเตือนของแต่ละค่า</div>
-      <div class="wave-wrap" id="waveWrap">
-        <svg class="w1" viewBox="0 0 1200 30" preserveAspectRatio="none"><path d="M0 15 q150 -18 300 0 t300 0 t300 0 t300 0 V30 H0 Z" fill="rgba(255,255,255,.5)"/></svg>
-        <svg class="w2" viewBox="0 0 1200 30" preserveAspectRatio="none"><path d="M0 16 q150 16 300 0 t300 0 t300 0 t300 0 V30 H0 Z" fill="rgba(255,255,255,.4)"/></svg>
-      </div>
-    </div>
-
-    <div class="section-head">
-      <h2>แนวโน้มตามเวลา</h2>
-      <div class="seg glass" id="dashRange">
-        <button data-n="20">20 จุด</button>
-        <button data-n="50" class="on">50 จุด</button>
-        <button data-n="100">100 จุด</button>
-      </div>
-    </div>
-    <div class="charts">
-      <div class="panel glass sheen"><div class="p-title"><span class="swatch" style="background:#f43f5e"></span>อุณหภูมิ (°C)</div><div class="chart-wrap"><canvas id="c-temp"></canvas></div></div>
-      <div class="panel glass sheen"><div class="p-title"><span class="swatch" style="background:#0ea5a4"></span>pH</div><div class="chart-wrap"><canvas id="c-ph"></canvas></div></div>
-      <div class="panel glass sheen"><div class="p-title"><span class="swatch" style="background:#f59e0b"></span>TDS (ppm)</div><div class="chart-wrap"><canvas id="c-tds"></canvas></div></div>
-      <div class="panel glass sheen"><div class="p-title"><span class="swatch" style="background:#4f74ff"></span>ระดับน้ำ (%)</div><div class="chart-wrap"><canvas id="c-level"></canvas></div></div>
-    </div>
-  </section>
-
-  <section class="view" id="view-charts">
-    <div class="filterbar glass">
-      <div class="field"><label>ตั้งแต่</label><input type="datetime-local" id="cFrom"></div>
-      <div class="field"><label>ถึง</label><input type="datetime-local" id="cTo"></div>
-      <button class="btn" id="cApply">ค้นหา</button>
-      <button class="btn ghost" id="cReset">ล้าง</button>
-      <div class="spacer"></div>
-      <div class="presets" id="cPresets">
-        <button class="chip-btn" data-h="24">24 ชม.</button>
-        <button class="chip-btn" data-h="168">7 วัน</button>
-        <button class="chip-btn" data-h="720">30 วัน</button>
-        <button class="chip-btn on" data-h="0">ทั้งหมด</button>
-      </div>
-    </div>
-    <div id="chartsRangeInfo" style="margin:-6px 2px 14px;color:var(--muted);font-size:13px"></div>
-    <div class="charts">
-      <div class="panel glass sheen"><div class="p-title"><span class="swatch" style="background:#f43f5e"></span>อุณหภูมิ (°C)</div><div class="chart-wrap"><canvas id="hc-temp"></canvas></div></div>
-      <div class="panel glass sheen"><div class="p-title"><span class="swatch" style="background:#0ea5a4"></span>pH</div><div class="chart-wrap"><canvas id="hc-ph"></canvas></div></div>
-      <div class="panel glass sheen"><div class="p-title"><span class="swatch" style="background:#f59e0b"></span>TDS (ppm)</div><div class="chart-wrap"><canvas id="hc-tds"></canvas></div></div>
-      <div class="panel glass sheen"><div class="p-title"><span class="swatch" style="background:#4f74ff"></span>ระดับน้ำ (%)</div><div class="chart-wrap"><canvas id="hc-level"></canvas></div></div>
-    </div>
-  </section>
-
-  <section class="view" id="view-table">
-    <div class="filterbar glass">
-      <div class="field"><label>ตั้งแต่</label><input type="datetime-local" id="tFrom"></div>
-      <div class="field"><label>ถึง</label><input type="datetime-local" id="tTo"></div>
-      <button class="btn" id="tApply">ค้นหา</button>
-      <button class="btn ghost" id="tReset">ล้าง</button>
-      <div class="spacer"></div>
-      <div class="presets" id="tPresets">
-        <button class="chip-btn" data-h="24">24 ชม.</button>
-        <button class="chip-btn" data-h="168">7 วัน</button>
-        <button class="chip-btn" data-h="720">30 วัน</button>
-        <button class="chip-btn on" data-h="0">ทั้งหมด</button>
-      </div>
-      <button class="btn ghost" id="csvBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 11l5 4 5-4M5 21h14"/></svg>ส่งออก CSV</button>
-    </div>
-    <div class="tablecard glass">
-      <div class="table-scroll">
-        <table>
-          <thead><tr><th>เวลา</th><th>อุณหภูมิ (°C)</th><th>pH</th><th>TDS (ppm)</th><th>ระดับน้ำ (%)</th><th>สถานะ</th></tr></thead>
-          <tbody id="tbody"></tbody>
-        </table>
-      </div>
-      <div id="tableEmpty" class="empty" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>ไม่พบข้อมูลในช่วงเวลาที่เลือก</div>
-      <div class="tablefoot">
-        <div id="tableCount">—</div>
-        <div class="pager">
-          <button id="prevPage" disabled>‹ ก่อนหน้า</button>
-          <span id="pageInfo" style="align-self:center;font-size:13px;padding:0 6px">—</span>
-          <button id="nextPage" disabled>ถัดไป ›</button>
+        <div class="hero-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>แตะการ์ดเพื่อดูเกณฑ์และคำเตือนของแต่ละค่า</div>
+        <div class="wave-wrap" id="waveWrap">
+          <svg class="w1" viewBox="0 0 1200 30" preserveAspectRatio="none"><path d="M0 15 q150 -18 300 0 t300 0 t300 0 t300 0 V30 H0 Z" fill="rgba(255,255,255,.5)"/></svg>
+          <svg class="w2" viewBox="0 0 1200 30" preserveAspectRatio="none"><path d="M0 16 q150 16 300 0 t300 0 t300 0 t300 0 V30 H0 Z" fill="rgba(255,255,255,.4)"/></svg>
         </div>
       </div>
-    </div>
-  </section>
 
-  <div class="foot-ver">ระบบเฝ้าระวังคุณภาพน้ำ IoT · Test V 1.0.7</div>
-</main>
+      <div class="section-head">
+        <h2>แนวโน้มตามเวลา</h2>
+        <div class="seg glass" id="dashRange">
+          <button data-n="20">20 จุด</button>
+          <button data-n="50" class="on">50 จุด</button>
+          <button data-n="100">100 จุด</button>
+        </div>
+      </div>
+      <div class="charts">
+        <div class="panel glass sheen"><div class="p-title"><span class="swatch" style="background:#f43f5e"></span>อุณหภูมิ (°C)</div><div class="chart-wrap"><canvas id="c-temp"></canvas></div></div>
+        <div class="panel glass sheen"><div class="p-title"><span class="swatch" style="background:#0ea5a4"></span>pH</div><div class="chart-wrap"><canvas id="c-ph"></canvas></div></div>
+        <div class="panel glass sheen"><div class="p-title"><span class="swatch" style="background:#f59e0b"></span>TDS (ppm)</div><div class="chart-wrap"><canvas id="c-tds"></canvas></div></div>
+        <div class="panel glass sheen"><div class="p-title"><span class="swatch" style="background:#4f74ff"></span>ระดับน้ำ (%)</div><div class="chart-wrap"><canvas id="c-level"></canvas></div></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-charts">
+      <div class="filterbar glass">
+        <div class="field"><label>ตั้งแต่</label><input type="datetime-local" step="1" id="cFrom"></div>
+        <div class="field"><label>ถึง</label><input type="datetime-local" step="1" id="cTo"></div>
+        <button class="btn" id="cApply">ค้นหา</button>
+        <button class="btn ghost" id="cReset">ล้าง</button>
+        <div class="spacer"></div>
+        <div class="presets" id="cPresets">
+          <button class="chip-btn" data-h="24">24 ชม.</button>
+          <button class="chip-btn" data-h="168">7 วัน</button>
+          <button class="chip-btn" data-h="720">30 วัน</button>
+          <button class="chip-btn on" data-h="0">ทั้งหมด</button>
+        </div>
+      </div>
+      <div id="chartsRangeInfo" style="margin:-6px 2px 14px;color:var(--muted);font-size:13px"></div>
+      <div class="charts">
+        <div class="panel glass sheen"><div class="p-title"><span class="swatch" style="background:#f43f5e"></span>อุณหภูมิ (°C)</div><div class="chart-wrap"><canvas id="hc-temp"></canvas></div></div>
+        <div class="panel glass sheen"><div class="p-title"><span class="swatch" style="background:#0ea5a4"></span>pH</div><div class="chart-wrap"><canvas id="hc-ph"></canvas></div></div>
+        <div class="panel glass sheen"><div class="p-title"><span class="swatch" style="background:#f59e0b"></span>TDS (ppm)</div><div class="chart-wrap"><canvas id="hc-tds"></canvas></div></div>
+        <div class="panel glass sheen"><div class="p-title"><span class="swatch" style="background:#4f74ff"></span>ระดับน้ำ (%)</div><div class="chart-wrap"><canvas id="hc-level"></canvas></div></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-table">
+      <div class="filterbar glass">
+        <div class="field"><label>ตั้งแต่</label><input type="datetime-local" step="1" id="tFrom"></div>
+        <div class="field"><label>ถึง</label><input type="datetime-local" step="1" id="tTo"></div>
+        <button class="btn" id="tApply">ค้นหา</button>
+        <button class="btn ghost" id="tReset">ล้าง</button>
+        <div class="spacer"></div>
+        <div class="presets" id="tPresets">
+          <button class="chip-btn" data-h="24">24 ชม.</button>
+          <button class="chip-btn" data-h="168">7 วัน</button>
+          <button class="chip-btn" data-h="720">30 วัน</button>
+          <button class="chip-btn on" data-h="0">ทั้งหมด</button>
+        </div>
+        <button class="btn ghost" id="csvBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 11l5 4 5-4M5 21h14"/></svg>ส่งออก CSV</button>
+      </div>
+      <div class="tablecard glass">
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>เวลา</th><th>อุณหภูมิ (°C)</th><th>pH</th><th>TDS (ppm)</th><th>ระดับน้ำ (%)</th><th>สถานะ</th></tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <div id="tableEmpty" class="empty" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>ไม่พบข้อมูลในช่วงเวลาที่เลือก</div>
+        <div class="tablefoot">
+          <div id="tableCount">—</div>
+          <div class="pager">
+            <button id="prevPage" disabled>‹ ก่อนหน้า</button>
+            <span id="pageInfo" style="align-self:center;font-size:13px;padding:0 6px">—</span>
+            <button id="nextPage" disabled>ถัดไป ›</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="foot-ver">ระบบเฝ้าระวังคุณภาพน้ำ IoT · Test V 1.0.8</div>
+  </main>
+</div>
 
 <div class="sheet-bg" id="sheetBg"></div>
 <div class="sheet glass" id="sheet" role="dialog" aria-modal="true">
   <div class="sheet-head">
     <div><div class="sheet-title" id="sheetTitle">—</div><div class="sheet-cur" id="sheetCur">—</div></div>
-    <button class="sheet-x" id="sheetX" aria-label="ปิด"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <button class="sheet-x" id="sheetX" aria-label="ปิด"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
   <div id="sheetBands"></div>
   <div class="sheet-note" id="sheetNote"></div>
@@ -397,94 +424,61 @@ tbody tr:hover{background:rgba(255,255,255,.4)}
 <script>
 (function(){if(self!==top){try{top.location=self.location;}catch(e){document.documentElement.style.display='none';}}})();
 
+var reduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function isDark(){var m=document.documentElement.getAttribute('data-theme');if(m==='dark')return true;if(m==='light')return false;return !!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}
+function cssVar(name){return getComputedStyle(document.documentElement).getPropertyValue(name).trim();}
+
 (function(){
   var canvas=document.getElementById('waterCanvas');
-  var gl=canvas.getContext('webgl',{antialias:false,alpha:false,depth:false,stencil:false,premultipliedAlpha:false});
-  if(!gl){canvas.style.display='none';return;}
-  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var vsrc='attribute vec2 a;void main(){gl_Position=vec4(a,0.0,1.0);}';
-  var fsrc=[
-    'precision highp float;',
-    'uniform vec2 uRes;uniform float uTime;uniform vec2 uMouse;',
-    'float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}',
-    'float vnoise(vec2 p){vec2 i=floor(p);vec2 f=fract(p);vec2 u=f*f*(3.0-2.0*f);',
-    'float a=hash(i);float b=hash(i+vec2(1.0,0.0));float c=hash(i+vec2(0.0,1.0));float d=hash(i+vec2(1.0,1.0));',
-    'return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);}',
-    'float fbm(vec2 p){float v=0.0;float a=0.5;mat2 m=mat2(1.6,1.2,-1.2,1.6);',
-    'for(int i=0;i<5;i++){v+=a*vnoise(p);p=m*p;a*=0.5;}return v;}',
-    'void main(){',
-    'vec2 uv=gl_FragCoord.xy/uRes.xy;',
-    'float ar=uRes.x/uRes.y;',
-    'vec2 p=vec2(uv.x*ar,uv.y);',
-    'vec2 mo=vec2(uMouse.x*ar,uMouse.y);',
-    'float t=uTime*0.05;',
-    'vec2 q=p*2.4;',
-    'q+=0.35*vec2(fbm(q+vec2(0.0,t)),fbm(q+vec2(t,0.0)));',
-    'float dm=distance(p,mo);',
-    'float ripple=sin(dm*26.0-uTime*1.8)*exp(-dm*3.4)*0.06;',
-    'float h=fbm(q+ripple);',
-    'float e=0.0016;',
-    'float hx=fbm(q+vec2(e,0.0)+ripple)-h;',
-    'float hy=fbm(q+vec2(0.0,e)+ripple)-h;',
-    'vec3 n=normalize(vec3(-hx,-hy,e*22.0));',
-    'vec3 L=normalize(vec3((uMouse-0.5)*2.0,1.0));',
-    'float diff=clamp(dot(n,L),0.0,1.0);',
-    'float spec=pow(clamp(dot(reflect(-L,n),vec3(0.0,0.0,1.0)),0.0,1.0),40.0);',
-    'vec3 deep=vec3(0.73,0.85,0.96);',
-    'vec3 shallow=vec3(0.92,0.93,1.0);',
-    'vec3 col=mix(deep,shallow,smoothstep(0.15,0.85,h));',
-    'col+=vec3(1.0)*spec*0.55;',
-    'col=mix(col,vec3(1.0),diff*0.12);',
-    'col+=pow(h,3.0)*0.10;',
-    'float glow=exp(-dm*2.2)*0.06;',
-    'col+=glow;',
-    'gl_FragColor=vec4(col,1.0);',
-    '}'
-  ].join('\n');
-  function sh(type,src){var s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);return s;}
-  var prog=gl.createProgram();
-  gl.attachShader(prog,sh(gl.VERTEX_SHADER,vsrc));
-  gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,fsrc));
-  gl.linkProgram(prog);
-  if(!gl.getProgramParameter(prog,gl.LINK_STATUS)){canvas.style.display='none';return;}
-  gl.useProgram(prog);
-  var buf=gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER,buf);
-  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
-  var la=gl.getAttribLocation(prog,'a');
-  gl.enableVertexAttribArray(la);
-  gl.vertexAttribPointer(la,2,gl.FLOAT,false,0,0);
-  var uRes=gl.getUniformLocation(prog,'uRes');
-  var uTime=gl.getUniformLocation(prog,'uTime');
-  var uMouse=gl.getUniformLocation(prog,'uMouse');
-  var scale=0.6;
-  function resize(){
-    var w=Math.max(2,Math.floor(window.innerWidth*scale));
-    var h=Math.max(2,Math.floor(window.innerHeight*scale));
-    canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);gl.uniform2f(uRes,w,h);
-  }
+  var ctx=canvas.getContext('2d');
+  if(!ctx){canvas.style.display='none';return;}
+  var W=0,H=0,dpr=Math.min(window.devicePixelRatio||1,1.5);
+  function resize(){W=window.innerWidth;H=window.innerHeight;canvas.width=Math.floor(W*dpr);canvas.height=Math.floor(H*dpr);canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0);}
   window.addEventListener('resize',resize);resize();
-  var tgt={x:0.5,y:0.55},cur={x:0.5,y:0.55};
-  window.addEventListener('mousemove',function(ev){tgt.x=ev.clientX/window.innerWidth;tgt.y=1.0-ev.clientY/window.innerHeight;});
-  window.addEventListener('touchmove',function(ev){if(ev.touches&&ev.touches[0]){tgt.x=ev.touches[0].clientX/window.innerWidth;tgt.y=1.0-ev.touches[0].clientY/window.innerHeight;}},{passive:true});
-  var start=performance.now(),last=0,hidden=false;
-  document.addEventListener('visibilitychange',function(){hidden=document.hidden;});
-  function frame(now){
-    if(reduce){cur.x=0.5;cur.y=0.55;gl.uniform2f(uMouse,cur.x,cur.y);gl.uniform1f(uTime,0.0);gl.drawArrays(gl.TRIANGLES,0,3);return;}
-    requestAnimationFrame(frame);
-    if(hidden)return;
-    if(now-last<33)return;
-    last=now;
-    var idle=(now-start)/1000.0;
-    if(!('ontouchstart' in window)){}
-    tgt.x+=Math.sin(idle*0.15)*0.00035;
-    tgt.y+=Math.cos(idle*0.12)*0.00035;
-    cur.x+=(tgt.x-cur.x)*0.05;cur.y+=(tgt.y-cur.y)*0.05;
-    gl.uniform2f(uMouse,cur.x,cur.y);
-    gl.uniform1f(uTime,(now-start)/1000.0);
-    gl.drawArrays(gl.TRIANGLES,0,3);
+  var ripples=[];var lastRip=0;
+  window.addEventListener('mousemove',function(e){var now=performance.now();if(now-lastRip>60){lastRip=now;ripples.push({x:e.clientX,y:e.clientY,r:0,a:.5});if(ripples.length>26)ripples.shift();}});
+  window.addEventListener('touchmove',function(e){if(e.touches&&e.touches[0]){ripples.push({x:e.touches[0].clientX,y:e.touches[0].clientY,r:0,a:.45});if(ripples.length>26)ripples.shift();}},{passive:true});
+  var hidden=false;document.addEventListener('visibilitychange',function(){hidden=document.hidden;});
+  var lines=[{y:.18,amp:16,len:.006,sp:.6,w:1.6},{y:.34,amp:22,len:.005,sp:-.45,w:1.6},{y:.5,amp:18,len:.007,sp:.55,w:1.4},{y:.66,amp:26,len:.004,sp:-.5,w:1.6},{y:.82,amp:20,len:.006,sp:.4,w:1.4}];
+  function draw(t){
+    ctx.clearRect(0,0,W,H);
+    var dark=isDark();
+    var stroke=dark?'rgba(120,170,240,':'rgba(70,130,230,';
+    var fill=dark?'rgba(90,140,220,':'rgba(120,170,255,';
+    for(var i=0;i<lines.length;i++){
+      var ln=lines[i];var baseY=ln.y*H;
+      ctx.beginPath();ctx.moveTo(0,baseY);
+      for(var x=0;x<=W;x+=10){var y=baseY+Math.sin(x*ln.len+t*ln.sp+i)*ln.amp+Math.sin(x*ln.len*2.3+t*ln.sp*1.4)*ln.amp*.35;ctx.lineTo(x,y);}
+      ctx.lineTo(W,baseY+70);ctx.lineTo(0,baseY+70);ctx.closePath();
+      var g=ctx.createLinearGradient(0,baseY-ln.amp,0,baseY+70);
+      g.addColorStop(0,fill+(dark?'.10)':'.12)'));g.addColorStop(1,fill+'0)');
+      ctx.fillStyle=g;ctx.fill();
+      ctx.beginPath();ctx.moveTo(0,baseY);
+      for(var x2=0;x2<=W;x2+=10){var y2=baseY+Math.sin(x2*ln.len+t*ln.sp+i)*ln.amp+Math.sin(x2*ln.len*2.3+t*ln.sp*1.4)*ln.amp*.35;ctx.lineTo(x2,y2);}
+      ctx.strokeStyle=stroke+(dark?'.16)':'.14)');ctx.lineWidth=ln.w;ctx.stroke();
+    }
+    for(var r=ripples.length-1;r>=0;r--){var rp=ripples[r];rp.r+=2.6;rp.a*=.955;if(rp.a<.02){ripples.splice(r,1);continue;}
+      ctx.beginPath();ctx.arc(rp.x,rp.y,rp.r,0,Math.PI*2);ctx.strokeStyle=stroke+(rp.a*(dark?1.1:.9)).toFixed(3)+')';ctx.lineWidth=1.4;ctx.stroke();}
   }
-  requestAnimationFrame(frame);
+  if(reduceMotion){draw(0);return;}
+  var start=performance.now(),last=0;
+  function loop(now){requestAnimationFrame(loop);if(hidden)return;if(now-last<33)return;last=now;draw((now-start)/1000);}
+  requestAnimationFrame(loop);
+})();
+
+(function(){
+  var el=document.getElementById('wtitle');if(!el)return;
+  var text=el.textContent;el.textContent='';
+  var seg=null;try{seg=new Intl.Segmenter('th',{granularity:'grapheme'});}catch(e){seg=null;}
+  var parts=seg?Array.prototype.map.call(Array.from(seg.segment(text)),function(s){return s.segment;}):[text];
+  var spans=[];
+  for(var i=0;i<parts.length;i++){var sp=document.createElement('span');sp.textContent=parts[i];spans.push(sp);el.appendChild(sp);}
+  if(reduceMotion||parts.length<=1)return;
+  var R=130,mx=-9999,my=-9999,raf=null;
+  function upd(){raf=null;for(var i=0;i<spans.length;i++){var rc=spans[i].getBoundingClientRect();var cx=rc.left+rc.width/2,cy=rc.top+rc.height/2;var dx=cx-mx,dy=cy-my;var d=Math.sqrt(dx*dx+dy*dy);if(d<R){var f=1-d/R;spans[i].style.transform='translateY('+(-13*f)+'px) scale('+(1+.4*f)+')';}else{spans[i].style.transform='';}}}
+  window.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY;if(!raf)raf=requestAnimationFrame(upd);});
+  window.addEventListener('mouseout',function(e){if(!e.relatedTarget){mx=-9999;my=-9999;if(!raf)raf=requestAnimationFrame(upd);}});
 })();
 
 var firebaseConfig={
@@ -539,21 +533,26 @@ var INFO={
 };
 var LEVELWORD={safe:'ปกติ',warn:'เฝ้าระวัง',danger:'อันตราย'};
 var LEVELCLASS={safe:'ok',warn:'warn',danger:'danger'};
-var LEVELHEX={safe:'#059669',warn:'#b45309',danger:'#dc2626'};
 function bandOf(m,v){var bs=INFO[m].bands;for(var i=0;i<bs.length;i++){if(v<bs[i].max)return bs[i];}return bs[bs.length-1];}
 function worst(ls){return ls.indexOf('danger')>=0?'danger':ls.indexOf('warn')>=0?'warn':'safe';}
+function levelHex(level){return cssVar('--c-'+(level==='safe'?'safe':level==='warn'?'warn':'danger'));}
 
 (function(){
-  function bindLogo(boxId,imgId){
-    var box=document.getElementById(boxId),img=document.getElementById(imgId);
-    if(!img)return;
+  function bindLogo(boxId,imgId){var box=document.getElementById(boxId),img=document.getElementById(imgId);if(!img)return;
     img.onload=function(){img.style.display='block';box.classList.add('has-img');box.classList.remove('plain');};
-    img.onerror=function(){img.style.display='none';box.classList.add('plain');box.classList.remove('has-img');};
-  }
+    img.onerror=function(){img.style.display='none';box.classList.add('plain');box.classList.remove('has-img');};}
   bindLogo('logoBox','logoImg');bindLogo('logoBox2','logoImg2');
 })();
 
-var drawer=document.getElementById('drawer'),backdrop=document.getElementById('backdrop'),menuBtn=document.getElementById('menuBtn');
+var THEMESET=document.querySelectorAll('#themeSwitch button');
+function currentThemeMode(){var m=document.documentElement.getAttribute('data-theme');return m||'auto';}
+function markThemeButtons(){var m=currentThemeMode();for(var i=0;i<THEMESET.length;i++)THEMESET[i].classList.toggle('on',THEMESET[i].getAttribute('data-theme-set')===m);}
+function applyTheme(mode){document.documentElement.setAttribute('data-theme',mode);try{localStorage.setItem('wq_theme',mode);}catch(e){}markThemeButtons();applyChartTheme();}
+for(var ti=0;ti<THEMESET.length;ti++){(function(btn){btn.onclick=function(){applyTheme(btn.getAttribute('data-theme-set'));};})(THEMESET[ti]);}
+markThemeButtons();
+if(window.matchMedia){var mq=window.matchMedia('(prefers-color-scheme: dark)');var mqh=function(){if(currentThemeMode()==='auto')applyChartTheme();};if(mq.addEventListener)mq.addEventListener('change',mqh);else if(mq.addListener)mq.addListener(mqh);}
+
+var sidebar=document.getElementById('sidebar'),backdrop=document.getElementById('backdrop'),menuBtn=document.getElementById('menuBtn');
 function setView(v){
   var all=document.querySelectorAll('.view');
   for(var i=0;i<all.length;i++)all[i].classList.toggle('active',all[i].id==='view-'+v);
@@ -564,10 +563,12 @@ function setView(v){
 }
 var dv=document.querySelectorAll('[data-view]');
 for(var i0=0;i0<dv.length;i0++){dv[i0].addEventListener('click',function(){setView(this.getAttribute('data-view'));closeMenu();});}
-function openMenu(){drawer.classList.add('open');backdrop.classList.add('show');menuBtn.classList.add('open');document.body.style.overflow='hidden';}
-function closeMenu(){drawer.classList.remove('open');backdrop.classList.remove('show');menuBtn.classList.remove('open');document.body.style.overflow='';}
+function openMenu(){sidebar.classList.add('open');backdrop.classList.add('show');menuBtn.classList.add('open');document.body.style.overflow='hidden';}
+function closeMenu(){sidebar.classList.remove('open');backdrop.classList.remove('show');menuBtn.classList.remove('open');document.body.style.overflow='';}
 menuBtn.onclick=function(){menuBtn.classList.contains('open')?closeMenu():openMenu();};
 backdrop.onclick=closeMenu;
+document.getElementById('brandHome').onclick=function(){window.location.reload();};
+document.getElementById('brandHome2').onclick=function(){window.location.reload();};
 
 var CUR={temp:null,ph:null,tds:null,level:null};
 var sheet=document.getElementById('sheet'),sheetBg=document.getElementById('sheetBg');
@@ -575,7 +576,7 @@ function openSheet(metric){
   var cfg=INFO[metric],v=CUR[metric];
   document.getElementById('sheetTitle').textContent=cfg.name;
   var curBand=(v!==null)?bandOf(metric,v):null,curEl=document.getElementById('sheetCur');
-  if(v!==null){curEl.innerHTML='ค่าปัจจุบัน: <b>'+cfg.fmt(v)+(cfg.unit?' '+cfg.unit:'')+'</b> · <span style="font-weight:700;color:'+LEVELHEX[curBand.level]+'">'+LEVELWORD[curBand.level]+'</span>';}
+  if(v!==null){curEl.innerHTML='ค่าปัจจุบัน: <b>'+cfg.fmt(v)+(cfg.unit?' '+cfg.unit:'')+'</b> · <span style="font-weight:700;color:'+levelHex(curBand.level)+'">'+LEVELWORD[curBand.level]+'</span>';}
   else curEl.textContent='ยังไม่มีข้อมูล';
   var html='';
   for(var i=0;i<cfg.bands.length;i++){var b=cfg.bands[i];var cur=(curBand===b)?'cur':'';
@@ -586,25 +587,26 @@ function openSheet(metric){
 }
 function closeSheet(){sheetBg.classList.remove('show');sheet.classList.remove('show');}
 var hms=document.querySelectorAll('.hm');
-for(var k=0;k<hms.length;k++){
-  (function(el){
-    el.addEventListener('click',function(){openSheet(el.getAttribute('data-metric'));});
-    el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();openSheet(el.getAttribute('data-metric'));}});
-  })(hms[k]);
-}
+for(var k=0;k<hms.length;k++){(function(el){el.addEventListener('click',function(){openSheet(el.getAttribute('data-metric'));});el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();openSheet(el.getAttribute('data-metric'));}});})(hms[k]);}
 sheetBg.onclick=closeSheet;document.getElementById('sheetX').onclick=closeSheet;
 document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeSheet();closeMenu();}});
 
+Chart.defaults.font.family='"SF Thonburi","IBM Plex Sans Thai",sans-serif';
+var ALLCHARTS=[];
 function baseChart(ctx,label,color,axis){
-  return new Chart(ctx,{type:'line',
+  var ch=new Chart(ctx,{type:'line',
     data:{labels:[],datasets:[{label:label,data:[],borderColor:color,backgroundColor:color+'22',fill:true,tension:.35,pointRadius:0,borderWidth:2}]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{display:false},tooltip:{backgroundColor:'#16233c',padding:10,titleFont:{family:'IBM Plex Sans Thai'},bodyFont:{family:'IBM Plex Sans Thai'}}},
-      scales:{x:{ticks:{color:'#8b97ad',maxRotation:0,autoSkip:true,maxTicksLimit:7,font:{size:10}},grid:{color:'rgba(120,140,170,.1)'}},
-        y:{min:axis.min,max:axis.max,ticks:{color:'#8b97ad',font:{size:10}},grid:{color:'rgba(120,140,170,.12)'}}}}});
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#16233c',padding:10,titleFont:{family:'"SF Thonburi","IBM Plex Sans Thai",sans-serif'},bodyFont:{family:'"SF Thonburi","IBM Plex Sans Thai",sans-serif'}}},
+      scales:{x:{ticks:{color:cssVar('--chart-tick'),maxRotation:0,autoSkip:true,maxTicksLimit:7,font:{size:10}},grid:{color:cssVar('--chart-grid')}},
+        y:{min:axis.min,max:axis.max,ticks:{color:cssVar('--chart-tick'),font:{size:10}},grid:{color:cssVar('--chart-grid')}}}}});
+  ALLCHARTS.push(ch);return ch;
 }
-function fmtTime(t){return new Date(t*1000).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});}
-function fmtFull(t){return new Date(t*1000).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'});}
+function applyChartTheme(){var tick=cssVar('--chart-tick'),grid=cssVar('--chart-grid');for(var i=0;i<ALLCHARTS.length;i++){var ch=ALLCHARTS[i];ch.options.scales.x.ticks.color=tick;ch.options.scales.x.grid.color=grid;ch.options.scales.y.ticks.color=tick;ch.options.scales.y.grid.color=grid;ch.update('none');}}
+function fmtTime(t){return new Date(t*1000).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+function fmtFull(t){return new Date(t*1000).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'medium'});}
+function fmtHour(t){return new Date(t*1000).toLocaleString('th-TH',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}
+function fmtDay(t){return new Date(t*1000).toLocaleDateString('th-TH',{day:'2-digit',month:'short'});}
 var dTemp=baseChart(document.getElementById('c-temp'),'อุณหภูมิ','#f43f5e',AXIS.temp);
 var dPh=baseChart(document.getElementById('c-ph'),'pH','#0ea5a4',AXIS.ph);
 var dTds=baseChart(document.getElementById('c-tds'),'TDS','#f59e0b',AXIS.tds);
@@ -613,15 +615,14 @@ var hTemp=baseChart(document.getElementById('hc-temp'),'อุณหภูมิ
 var hPh=baseChart(document.getElementById('hc-ph'),'pH','#0ea5a4',AXIS.ph);
 var hTds=baseChart(document.getElementById('hc-tds'),'TDS','#f59e0b',AXIS.tds);
 var hLevel=baseChart(document.getElementById('hc-level'),'ระดับน้ำ','#4f74ff',AXIS.level);
+applyChartTheme();
 
 var OFFLINE_AFTER_SEC=120;
 var lastTime=null;
 function paint(metric,value){
   var b=bandOf(metric,value);
-  var badge=document.getElementById('b-'+metric);
-  badge.textContent=LEVELWORD[b.level];badge.className='hm-badge '+LEVELCLASS[b.level];
-  var card=document.querySelector('.hm[data-metric="'+metric+'"]');
-  card.classList.remove('s-safe','s-warn','s-danger');card.classList.add('s-'+b.level);
+  var badge=document.getElementById('b-'+metric);badge.textContent=LEVELWORD[b.level];badge.className='hm-badge '+LEVELCLASS[b.level];
+  var card=document.querySelector('.hm[data-metric="'+metric+'"]');card.classList.remove('s-safe','s-warn','s-danger');card.classList.add('s-'+b.level);
   return b.level;
 }
 db.ref('current').on('value',function(snap){
@@ -638,8 +639,7 @@ db.ref('current').on('value',function(snap){
   document.getElementById('overallStatus').textContent=LEVELWORD[w];
   var subs={safe:'ทุกค่าอยู่ในเกณฑ์มาตรฐานน้ำใช้ทั่วไป',warn:'มีบางค่าควรเฝ้าระวัง แตะการ์ดเพื่อดูรายละเอียด',danger:'มีค่าที่อยู่ในระดับอันตราย ควรตรวจสอบระบบน้ำโดยด่วน'};
   document.getElementById('overallSub').textContent=subs[w];
-  lastTime=d.time?+d.time:Math.floor(Date.now()/1000);
-  updateConnection();
+  lastTime=d.time?+d.time:Math.floor(Date.now()/1000);updateConnection();
 });
 function updateConnection(){
   var pill=document.getElementById('statusPill');
@@ -654,7 +654,7 @@ function updateConnection(){
 setInterval(updateConnection,5000);
 
 var HISTORY=[],DASH_N={value:50};
-db.ref('history').limitToLast(2000).on('value',function(snap){
+db.ref('history').limitToLast(3000).on('value',function(snap){
   var rows=[];snap.forEach(function(c){var v=c.val();if(v&&v.time)rows.push(v);});
   rows.sort(function(a,b){return a.time-b.time;});HISTORY=rows;updateDashCharts();
   if(document.getElementById('view-table').classList.contains('active'))renderTable();
@@ -677,17 +677,33 @@ function wireRange(fromId,toId,presetSel,onChange){
     var h=+p.getAttribute('data-h');
     if(h===0){document.getElementById(fromId).value='';document.getElementById(toId).value='';}
     else{var now=new Date(),from=new Date(now.getTime()-h*3600*1000);
-      var iso=function(d){return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);};
+      var iso=function(d){return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,19);};
       document.getElementById(fromId).value=iso(from);document.getElementById(toId).value=iso(now);}
     onChange();
   };})(presets[i]);}
 }
+function aggregate(rows,bucketSec){
+  var map={},order=[];
+  for(var i=0;i<rows.length;i++){var r=rows[i];var key=Math.floor(r.time/bucketSec)*bucketSec;
+    if(!map[key]){map[key]={t:key,temp:0,ph:0,tds:0,level:0,n:0};order.push(key);}
+    var o=map[key];o.temp+=+r.temp;o.ph+=+r.ph;o.tds+=+r.tds;o.level+=+r.level;o.n++;}
+  order.sort(function(a,b){return a-b;});
+  return order.map(function(key){var o=map[key];return {t:o.t,temp:o.temp/o.n,ph:o.ph/o.n,tds:o.tds/o.n,level:o.level/o.n};});
+}
 function renderRangeCharts(){
-  var from=toTs(document.getElementById('cFrom').value),to=toTs(document.getElementById('cTo').value),rows=filterRange(from,to);
-  var labels=rows.map(function(r){return rows.length>60?new Date(r.time*1000).toLocaleDateString('th-TH',{day:'2-digit',month:'short'}):fmtFull(r.time);});
-  function set(ch,k){ch.data.labels=labels;ch.data.datasets[0].data=rows.map(function(r){return +r[k];});ch.update('none');}
+  var from=toTs(document.getElementById('cFrom').value),to=toTs(document.getElementById('cTo').value);
+  var rows=filterRange(from,to);
+  var info=document.getElementById('chartsRangeInfo');
+  if(!rows.length){var em=[];function clr(ch){ch.data.labels=em;ch.data.datasets[0].data=em;ch.update('none');}clr(hTemp);clr(hPh);clr(hTds);clr(hLevel);info.textContent='ไม่พบข้อมูลในช่วงเวลาที่เลือก';return;}
+  var f=(from!==null)?from:rows[0].time,tt=(to!==null)?to:rows[rows.length-1].time;
+  var span=Math.max(1,tt-f);
+  var bucket=span<=26*3600?3600:86400;
+  var agg=aggregate(rows,bucket);
+  var labels=agg.map(function(a){return bucket>=86400?fmtDay(a.t):fmtHour(a.t);});
+  function set(ch,k){ch.data.labels=labels;ch.data.datasets[0].data=agg.map(function(a){return Math.round(a[k]*100)/100;});ch.update('none');}
   set(hTemp,'temp');set(hPh,'ph');set(hTds,'tds');set(hLevel,'level');
-  document.getElementById('chartsRangeInfo').textContent=rows.length?('พบ '+rows.length+' รายการ · '+fmtFull(rows[0].time)+' — '+fmtFull(rows[rows.length-1].time)):'ไม่พบข้อมูลในช่วงเวลาที่เลือก';
+  var unit=bucket>=86400?'ต่อวัน':'ต่อชั่วโมง';
+  info.textContent='พบ '+rows.length+' รายการ · สรุปเฉลี่ย'+unit+' '+agg.length+' จุด · '+fmtFull(rows[0].time)+' — '+fmtFull(rows[rows.length-1].time);
 }
 document.getElementById('cApply').onclick=function(){var ps=document.querySelectorAll('#cPresets .chip-btn');for(var x=0;x<ps.length;x++)ps[x].classList.remove('on');renderRangeCharts();};
 document.getElementById('cReset').onclick=function(){document.getElementById('cFrom').value='';document.getElementById('cTo').value='';var ps=document.querySelectorAll('#cPresets .chip-btn');for(var x=0;x<ps.length;x++)ps[x].classList.toggle('on',ps[x].getAttribute('data-h')==='0');renderRangeCharts();};
