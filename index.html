@@ -138,7 +138,12 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 .wtitle{font-weight:700;white-space:nowrap;font-size:clamp(20px,3.4vw,36px);line-height:1.1;letter-spacing:.5px;
   background:linear-gradient(90deg,#3aa0f0,#28c7e6,#4f74ff,#6366f1,#28c7e6,#3aa0f0);background-size:300% 100%;
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:flow 7s linear infinite}
-.wtitle span{display:inline-block;transition:transform .16s ease-out;will-change:transform}
+.wtitle span{display:inline-block;transition:transform .16s ease-out;will-change:transform;
+  background:linear-gradient(90deg,#3aa0f0,#28c7e6,#4f74ff,#6366f1,#28c7e6,#3aa0f0);background-size:300% 100%;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:flow 7s linear infinite}
+@supports not ((-webkit-background-clip:text) or (background-clip:text)){
+  .wtitle,.wtitle span{background:none;-webkit-text-fill-color:#4f74ff;color:#4f74ff}
+}
 @keyframes flow{to{background-position:300% 0}}
 .status-pill{display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border-radius:999px;font-size:13px;color:var(--muted);font-weight:500;margin-left:auto}
 .status-pill.off{color:#e5484d}
@@ -286,7 +291,7 @@ tbody tr:hover{background:var(--row-hover)}
     </div>
     <div class="dfoot">
       <div><span class="dot-live" id="liveDot"></span> <span id="liveText">กำลังเชื่อมต่อ…</span></div>
-      <div>ระบบเฝ้าระวังคุณภาพน้ำ IoT<br>Test V 1.0.9</div>
+      <div>ระบบเฝ้าระวังคุณภาพน้ำ IoT<br>Test V 1.1.0</div>
     </div>
   </aside>
   <div class="backdrop" id="backdrop"></div>
@@ -407,7 +412,7 @@ tbody tr:hover{background:var(--row-hover)}
       </div>
     </section>
 
-    <div class="foot-ver">ระบบเฝ้าระวังคุณภาพน้ำ IoT · Test V 1.0.9</div>
+    <div class="foot-ver">ระบบเฝ้าระวังคุณภาพน้ำ IoT · Test V 1.1.0</div>
   </main>
 </div>
 
