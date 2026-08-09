@@ -22,9 +22,9 @@
   --accent1:#28c7e6; --accent2:#4f74ff; --indigo:#6366f1;
   --ok:#10b981; --warn:#f59e0b; --bad:#f43f5e;
   --r:22px; --font:"SF Thonburi","IBM Plex Sans Thai",sans-serif; --spring:cubic-bezier(.34,1.56,.64,1);
-  --ink:#16233c; --muted:#6a7891; --faint:#95a1b6;
-  --glass:rgba(255,255,255,.42); --stroke:rgba(255,255,255,.7);
-  --lg-blur:26px; --lg-sat:180%; --lg-bright:1.06;
+  --ink:#101c33; --muted:#54627a; --faint:#76839a;
+  --glass:rgba(255,255,255,.88); --menu-glass:rgba(255,255,255,.38); --stroke:rgba(255,255,255,.8);
+  --lg-blur:20px; --lg-sat:150%; --lg-bright:1.01;
   --lg-spec:rgba(255,255,255,.8); --lg-spec-b:rgba(255,255,255,.28); --lg-inner:rgba(255,255,255,.65);
   --lg-rim1:rgba(255,255,255,.95); --lg-rim2:rgba(255,255,255,.34); --lg-rim3:rgba(255,255,255,.55);
   --lg-gloss:rgba(255,255,255,.38); --lg-thin:rgba(255,255,255,.18);
@@ -57,9 +57,9 @@
 }
 @media(prefers-color-scheme:dark){
   :root[data-theme="auto"]{
-    --ink:#e9eef7; --muted:#9aa7bd; --faint:#6f7d94;
-    --glass:rgba(28,35,54,.46); --stroke:rgba(255,255,255,.13);
-    --lg-blur:26px; --lg-sat:165%; --lg-bright:1.14;
+    --ink:#f1f5fc; --muted:#aab6ca; --faint:#8a97ad;
+    --glass:rgba(24,31,49,.9); --menu-glass:rgba(28,35,54,.42); --stroke:rgba(255,255,255,.14);
+    --lg-blur:20px; --lg-sat:145%; --lg-bright:1.02;
     --lg-spec:rgba(255,255,255,.24); --lg-spec-b:rgba(255,255,255,.07); --lg-inner:rgba(255,255,255,.14);
     --lg-rim1:rgba(255,255,255,.62); --lg-rim2:rgba(255,255,255,.14); --lg-rim3:rgba(255,255,255,.3);
     --lg-gloss:rgba(255,255,255,.09); --lg-thin:rgba(255,255,255,.06);
@@ -93,16 +93,17 @@ button{font-family:inherit;cursor:pointer;color:inherit}
   backdrop-filter:blur(var(--lg-blur)) saturate(var(--lg-sat)) brightness(var(--lg-bright));
   border:1px solid var(--stroke);
   box-shadow:var(--shadow), inset 0 1px 0 var(--lg-spec), inset 0 -1px 0 var(--lg-spec-b), inset 0 0 22px -10px var(--lg-inner)}
-/* refraction pass — dropped automatically by browsers that can't parse url() here */
-.glass{-webkit-backdrop-filter:blur(var(--lg-blur)) saturate(var(--lg-sat)) brightness(var(--lg-bright)) url(#lgRefract);
-  backdrop-filter:blur(var(--lg-blur)) saturate(var(--lg-sat)) brightness(var(--lg-bright)) url(#lgRefract)}
+/* refraction pass — เฉพาะเมนู (sidebar) เท่านั้น ที่อื่นเน้นอ่านง่าย */
+.sidebar.glass{background:var(--menu-glass);
+  -webkit-backdrop-filter:blur(28px) saturate(185%) brightness(1.08) url(#lgRefract);
+  backdrop-filter:blur(28px) saturate(185%) brightness(1.08) url(#lgRefract)}
 /* specular rim: bright top-left → dark bottom-right, the hallmark of a glass bevel */
 .glass::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.2px;pointer-events:none;z-index:1;
   background:linear-gradient(145deg,var(--lg-rim1) 0%,var(--lg-rim2) 28%,transparent 50%,transparent 62%,var(--lg-rim2) 84%,var(--lg-rim3) 100%);
   -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;
   mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude}
-/* soft interior gloss */
-.glass::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;
+/* soft interior gloss — เฉพาะเมนู เพื่อไม่ให้เนื้อหาอื่นจาง */
+.sidebar.glass::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;
   background:linear-gradient(160deg,var(--lg-gloss) 0%,transparent 42%)}
 
 .liquid-glass{position:relative;overflow:hidden;background:var(--lg-thin);
@@ -149,7 +150,7 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 .brand .logo.plain{background:linear-gradient(140deg,var(--accent1),var(--accent2))}
 .brand .logo.has-img{background:#fff}
 .brand .logo img{width:100%;height:100%;object-fit:contain;display:none;border-radius:11px}
-.brand .bname{font-weight:700;font-size:15px;line-height:1.15;text-align:left}
+.brand .bname{font-weight:700;font-size:15px;line-height:1.45;text-align:left}
 .brand .bname small{display:block;font-weight:400;font-size:11px;color:var(--muted)}
 .brand:hover .bname{opacity:.75}
 .dnav{display:flex;flex-direction:column;gap:4px;margin-top:2px}
@@ -180,16 +181,10 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 .brandbig .blogo{width:40px;height:40px;border-radius:12px;flex:none;display:grid;place-items:center;overflow:hidden;background:#fff}
 .brandbig .blogo.plain{background:linear-gradient(140deg,var(--accent1),var(--accent2));color:#fff}
 .brandbig .blogo img{width:100%;height:100%;object-fit:contain;display:none}
-.wtitle{font-weight:700;white-space:nowrap;font-size:clamp(20px,3.4vw,36px);line-height:1.1;letter-spacing:.5px;
-  background:linear-gradient(92deg,#0aa8d8 0%,#2f6bff 52%,#6d4dff 100%);
-  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
-:root[data-theme="dark"] .wtitle{background:linear-gradient(92deg,#4fe0ff 0%,#7aa0ff 52%,#b39bff 100%);
-  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
-@media(prefers-color-scheme:dark){:root[data-theme="auto"] .wtitle{background:linear-gradient(92deg,#4fe0ff 0%,#7aa0ff 52%,#b39bff 100%);
-  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}}
-@supports not ((-webkit-background-clip:text) or (background-clip:text)){
-  .wtitle{background:none;-webkit-text-fill-color:#2f6bff;color:#2f6bff}
-}
+.wtitle{font-weight:700;white-space:nowrap;font-size:clamp(20px,3.4vw,36px);line-height:1.35;letter-spacing:0;
+  color:#1f5fe0;background:none;-webkit-text-fill-color:currentColor}
+:root[data-theme="dark"] .wtitle{color:#78b4ff}
+@media(prefers-color-scheme:dark){:root[data-theme="auto"] .wtitle{color:#78b4ff}}
 .status-pill{display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border-radius:999px;font-size:13px;color:var(--muted);font-weight:500;margin-left:auto}
 .status-pill.off{color:#e5484d}
 
@@ -201,7 +196,7 @@ button{font-family:inherit;cursor:pointer;color:inherit}
   animation:drift 14s ease-in-out infinite alternate}
 @keyframes drift{from{transform:translate(0,0)}to{transform:translate(-36px,18px)}}
 .hero-label{font-size:13px;opacity:.92;font-weight:500;letter-spacing:.3px;position:relative;z-index:3}
-.hero-status{font-weight:700;font-size:34px;line-height:1.1;margin-top:2px;position:relative;z-index:3;text-shadow:0 2px 12px rgba(0,0,0,.18)}
+.hero-status{font-weight:700;font-size:34px;line-height:1.35;margin-top:2px;position:relative;z-index:3;text-shadow:0 2px 12px rgba(0,0,0,.18)}
 .hero-sub{font-size:13px;opacity:.94;margin-top:3px;max-width:620px;position:relative;z-index:3;line-height:1.55}
 .hero-alert{position:relative;z-index:3;margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .ha-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.94);color:#b42318;font-size:12px;font-weight:700;box-shadow:0 4px 12px -4px rgba(0,0,0,.35)}
