@@ -137,7 +137,9 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 .nav-item.active,.seg button.on,.theme-switch button.on{position:relative;overflow:hidden}
 .nav-item.active::after,.seg button.on::after,.theme-switch button.on::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
   background:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,0) 58%)}
-.hm{-webkit-backdrop-filter:blur(12px) saturate(160%) url(#lgRefractSoft);backdrop-filter:blur(12px) saturate(160%) url(#lgRefractSoft)}
+/* การ์ด: สีทึบชัด ไม่หักเหพื้นหลัง แต่คงขอบกระจก (.lg-edge) ไว้ */
+.hm{-webkit-backdrop-filter:none;backdrop-filter:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45), 0 10px 24px -14px rgba(0,0,0,.55)}
 .hero{border:1px solid rgba(255,255,255,.28)}
 .status-pill,.seg,.filterbar,.panel,.tablecard,.sheet,.sidebar{border-radius:var(--r)}
 .sidebar{border-radius:26px}
@@ -604,6 +606,7 @@ function setHeroPalette(p){
   window.addEventListener('resize',resize);resize();
   var hidden=false;document.addEventListener('visibilitychange',function(){hidden=document.hidden;});
   var lines=[{y:.18,amp:16,len:.006,sp:.6,w:1.6},{y:.34,amp:22,len:.005,sp:-.45,w:1.6},{y:.5,amp:18,len:.007,sp:.55,w:1.4},{y:.66,amp:26,len:.004,sp:-.5,w:1.6},{y:.82,amp:20,len:.006,sp:.4,w:1.4}];
+  var ampK=1;
   function draw(t){
     ctx.clearRect(0,0,W,H);
     var dark=isDark();
@@ -611,11 +614,11 @@ function setHeroPalette(p){
     var base=dark?lerpArr(AMBIENT,[255,255,255],0.28):AMBIENT;
     var pre='rgba('+Math.round(base[0])+','+Math.round(base[1])+','+Math.round(base[2])+',';
     for(var i=0;i<lines.length;i++){
-      var ln=lines[i];var baseY=ln.y*H;
+      var ln=lines[i];var baseY=ln.y*H;var A=ln.amp*ampK;
       ctx.beginPath();ctx.moveTo(0,baseY);
-      for(var x=0;x<=W;x+=10){var y=baseY+Math.sin(x*ln.len+t*ln.sp+i)*ln.amp+Math.sin(x*ln.len*2.3+t*ln.sp*1.4)*ln.amp*.35;ctx.lineTo(x,y);}
+      for(var x=0;x<=W;x+=10){var y=baseY+Math.sin(x*ln.len+t*ln.sp+i)*A+Math.sin(x*ln.len*2.3+t*ln.sp*1.4)*A*.35;ctx.lineTo(x,y);}
       ctx.lineTo(W,baseY+70);ctx.lineTo(0,baseY+70);ctx.closePath();
-      var g=ctx.createLinearGradient(0,baseY-ln.amp,0,baseY+70);
+      var g=ctx.createLinearGradient(0,baseY-A,0,baseY+70);
       g.addColorStop(0,pre+(dark?'.20)':'.24)'));g.addColorStop(1,pre+'0)');
       ctx.fillStyle=g;ctx.fill();
       ctx.beginPath();ctx.moveTo(0,baseY);
@@ -623,9 +626,33 @@ function setHeroPalette(p){
       ctx.strokeStyle=pre+(dark?'.32)':'.30)');ctx.lineWidth=ln.w+.3;ctx.stroke();
     }
   }
-  if(reduceMotion){draw(0);window.__redrawWater=function(){draw(0);};return;}
-  var start=performance.now(),last=0;
-  function loop(now){requestAnimationFrame(loop);if(hidden)return;if(now-last<33)return;last=now;draw((now-start)/1000);}
+  if(reduceMotion){draw(0);window.__redrawWater=function(){draw(0);};
+    window.__setWaterSeverity=function(){};return;}
+
+  /* ความเร็วคลื่นผูกกับระดับความอันตราย: น้ำดี = ไหลช้านิ่ง, อันตราย = เชี่ยวและคลื่นสูงขึ้น */
+  var SPD_CALM=0.35, SPD_ROUGH=2.9, AMP_CALM=0.85, AMP_ROUGH=1.6;
+  var spd=SPD_CALM, spdTarget=SPD_CALM, ampTarget=AMP_CALM;
+  ampK=AMP_CALM;
+  window.__setWaterSeverity=function(sev){
+    sev=Math.max(0,Math.min(1,isFinite(sev)?sev:0));
+    var e=sev*sev*(3-2*sev);
+    spdTarget=SPD_CALM+(SPD_ROUGH-SPD_CALM)*e;
+    ampTarget=AMP_CALM+(AMP_ROUGH-AMP_CALM)*e;
+  };
+
+  var phase=0,last=0,lastT=0;
+  function loop(now){
+    requestAnimationFrame(loop);
+    if(hidden){lastT=0;return;}
+    if(now-last<33)return;
+    last=now;
+    var dt=lastT?Math.min((now-lastT)/1000,0.12):0;
+    lastT=now;
+    spd+=(spdTarget-spd)*0.04;
+    ampK+=(ampTarget-ampK)*0.04;
+    phase+=dt*spd;
+    draw(phase);
+  }
   requestAnimationFrame(loop);
 })();
 
@@ -922,14 +949,15 @@ function showDbError(err){
   document.getElementById('statusPill').classList.add('off');
   document.getElementById('overallSub').textContent='ดึงข้อมูลจากฐานข้อมูลไม่สำเร็จ ('+msg+') หากใช้ Brave ลองปิด Shields สำหรับเว็บนี้ หรือใช้เบราว์เซอร์อื่น';
   setHeroPalette(OFF_PALETTE);
+  if(window.__setWaterSeverity)window.__setWaterSeverity(0);
   document.getElementById('overallStatus').textContent='ไม่ได้เชื่อมต่อ';
 }
 
 function tintCard(card,sev){
   var rgb=(sev===null)?OFF_CARD:cardColor(sev);
   var s=Math.round(rgb[0])+','+Math.round(rgb[1])+','+Math.round(rgb[2]);
-  card.style.setProperty('--card-bg','rgba('+s+',.30)');
-  card.style.setProperty('--card-bgh','rgba('+s+',.44)');
+  card.style.setProperty('--card-bg','rgb('+s+')');
+  card.style.setProperty('--card-bgh','rgba('+s+',.88)');
 }
 
 function handleCurrent(d){
@@ -981,8 +1009,10 @@ function handleCurrent(d){
     var names=[];for(var n1=0;n1<offs.length;n1++)names.push(INFO[offs[n1]].name);
     subEl.textContent='ตรวจไม่พบ: '+names.join(' · ')+' — ตรวจสอบสายสัญญาณและแหล่งจ่ายไฟของเซนเซอร์';
     setHeroPalette(OFF_PALETTE);
+    if(window.__setWaterSeverity)window.__setWaterSeverity(0);
   }else{
     var tier=tierOf(sevMax);
+    if(window.__setWaterSeverity)window.__setWaterSeverity(sevMax);
     var sub=tier.sub;
     if(worstMetric!==null&&sevMax>=SEV_WARN_IN){
       var wr=CUR[worstMetric],wb=bandOf(worstMetric,wr.v),wc=INFO[worstMetric];
