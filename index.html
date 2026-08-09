@@ -95,16 +95,20 @@ button{font-family:inherit;cursor:pointer;color:inherit}
   box-shadow:var(--shadow), inset 0 1px 0 var(--lg-spec), inset 0 -1px 0 var(--lg-spec-b), inset 0 0 22px -10px var(--lg-inner)}
 /* refraction pass — เฉพาะเมนู (sidebar) เท่านั้น ที่อื่นเน้นอ่านง่าย */
 .sidebar.glass{background:var(--menu-glass);
-  -webkit-backdrop-filter:blur(28px) saturate(185%) brightness(1.08) url(#lgRefract);
-  backdrop-filter:blur(28px) saturate(185%) brightness(1.08) url(#lgRefract)}
+  -webkit-backdrop-filter:blur(24px) saturate(155%);backdrop-filter:blur(24px) saturate(155%)}
+/* เมนู: ตัวอักษรต้องอ่านชัดบนกระจกใส */
+.sidebar .nav-item{color:var(--ink);opacity:.82}
+.sidebar .nav-item:hover,.sidebar .nav-item.active{opacity:1}
+.sidebar .dfoot{color:var(--muted)}
+.sidebar .side-sec .lbl{color:var(--muted)}
+.sidebar .theme-switch button{color:var(--ink);opacity:.7}
+.sidebar .theme-switch button.on{opacity:1;color:#fff}
 /* specular rim: bright top-left → dark bottom-right, the hallmark of a glass bevel */
 .glass::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.2px;pointer-events:none;z-index:1;
   background:linear-gradient(145deg,var(--lg-rim1) 0%,var(--lg-rim2) 28%,transparent 50%,transparent 62%,var(--lg-rim2) 84%,var(--lg-rim3) 100%);
   -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;
   mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude}
-/* soft interior gloss — เฉพาะเมนู เพื่อไม่ให้เนื้อหาอื่นจาง */
-.sidebar.glass::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;
-  background:linear-gradient(160deg,var(--lg-gloss) 0%,transparent 42%)}
+/* gloss ถูกถอดออก — ทำให้เมนูเกิดคราบขาวทับตัวหนังสือ */
 
 .liquid-glass{position:relative;overflow:hidden;background:var(--lg-thin);
   -webkit-backdrop-filter:blur(12px) saturate(170%) url(#lgRefractSoft);
@@ -211,12 +215,13 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 .hm:hover{transform:translateY(-3px);background:var(--card-bgh,rgba(255,255,255,.3))}
 .hm:active{transform:translateY(-1px) scale(.98)}
 .hm-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.hm-label{font-size:12.5px;opacity:.95;display:flex;align-items:center;gap:5px}
-.hm-label svg{width:13px;height:13px;opacity:.8}
+.hm-label{font-size:12.5px;opacity:1;font-weight:600;display:flex;align-items:center;gap:5px;text-shadow:0 1px 4px rgba(0,0,0,.45)}
+.hm-label svg{width:13px;height:13px;opacity:.9}
 .hm-badge{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap;background:rgba(255,255,255,.95)}
 .hm-badge.ok{color:#059669}.hm-badge.warn{color:#b45309}.hm-badge.danger{color:#dc2626}.hm-badge.off{color:#475569}
-.hm-val{font-weight:700;font-size:30px;margin-top:12px;letter-spacing:.3px;white-space:nowrap}
-.hm-val small{font-size:13px;font-weight:400;opacity:.85;margin-left:3px}
+.hm-val{font-weight:700;font-size:30px;margin-top:12px;letter-spacing:.3px;white-space:nowrap;
+  text-shadow:0 2px 10px rgba(0,0,0,.5), 0 1px 2px rgba(0,0,0,.35)}
+.hm-val small{font-size:13px;font-weight:600;opacity:1;margin-left:3px}
 .hm.is-off .hm-val{opacity:.6}
 .hm.is-off{outline:1.5px dashed rgba(255,255,255,.55);outline-offset:-4px}
 .hero-hint{position:relative;z-index:3;font-size:11.5px;opacity:.82;margin-top:8px;display:flex;align-items:center;gap:6px}
@@ -919,8 +924,8 @@ function showDbError(err){
 function tintCard(card,sev){
   var rgb=(sev===null)?OFF_CARD:cardColor(sev);
   var s=Math.round(rgb[0])+','+Math.round(rgb[1])+','+Math.round(rgb[2]);
-  card.style.setProperty('--card-bg','rgba('+s+',.72)');
-  card.style.setProperty('--card-bgh','rgba('+s+',.86)');
+  card.style.setProperty('--card-bg','rgba('+s+',.30)');
+  card.style.setProperty('--card-bgh','rgba('+s+',.44)');
 }
 
 function handleCurrent(d){
