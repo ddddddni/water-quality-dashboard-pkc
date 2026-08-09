@@ -23,8 +23,12 @@
   --ok:#10b981; --warn:#f59e0b; --bad:#f43f5e;
   --r:22px; --font:"SF Thonburi","IBM Plex Sans Thai",sans-serif; --spring:cubic-bezier(.34,1.56,.64,1);
   --ink:#16233c; --muted:#6a7891; --faint:#95a1b6;
-  --glass:rgba(255,255,255,.5); --stroke:rgba(255,255,255,.75);
-  --field-bg:rgba(255,255,255,.7); --field-border:rgba(120,140,170,.3);
+  --glass:rgba(255,255,255,.42); --stroke:rgba(255,255,255,.7);
+  --lg-blur:26px; --lg-sat:180%; --lg-bright:1.06;
+  --lg-spec:rgba(255,255,255,.8); --lg-spec-b:rgba(255,255,255,.28); --lg-inner:rgba(255,255,255,.65);
+  --lg-rim1:rgba(255,255,255,.95); --lg-rim2:rgba(255,255,255,.34); --lg-rim3:rgba(255,255,255,.55);
+  --lg-gloss:rgba(255,255,255,.38); --lg-thin:rgba(255,255,255,.18);
+  --field-bg:rgba(255,255,255,.66); --field-border:rgba(120,140,170,.3);
   --chip-bg:rgba(255,255,255,.6); --pager-bg:rgba(255,255,255,.6);
   --thead-bg:rgba(255,255,255,.4); --row-hover:rgba(255,255,255,.4); --td-border:rgba(120,140,170,.14);
   --sheet-band:rgba(255,255,255,.45); --sheet-band-cur:rgba(255,255,255,.92); --sheet-x-bg:rgba(255,255,255,.7);
@@ -54,7 +58,11 @@
 @media(prefers-color-scheme:dark){
   :root[data-theme="auto"]{
     --ink:#e9eef7; --muted:#9aa7bd; --faint:#6f7d94;
-    --glass:rgba(28,35,54,.55); --stroke:rgba(255,255,255,.1);
+    --glass:rgba(28,35,54,.46); --stroke:rgba(255,255,255,.13);
+    --lg-blur:26px; --lg-sat:165%; --lg-bright:1.14;
+    --lg-spec:rgba(255,255,255,.24); --lg-spec-b:rgba(255,255,255,.07); --lg-inner:rgba(255,255,255,.14);
+    --lg-rim1:rgba(255,255,255,.62); --lg-rim2:rgba(255,255,255,.14); --lg-rim3:rgba(255,255,255,.3);
+    --lg-gloss:rgba(255,255,255,.09); --lg-thin:rgba(255,255,255,.06);
     --field-bg:rgba(255,255,255,.06); --field-border:rgba(255,255,255,.14);
     --chip-bg:rgba(255,255,255,.06); --pager-bg:rgba(255,255,255,.06);
     --thead-bg:rgba(255,255,255,.05); --row-hover:rgba(255,255,255,.05); --td-border:rgba(255,255,255,.08);
@@ -77,19 +85,58 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 #waterCanvas{position:fixed;inset:0;z-index:-2;display:block;width:100%;height:100%}
 #bgVeil{position:fixed;inset:0;z-index:-1;pointer-events:none;background:var(--veil);transition:background .5s}
 
-.glass{background:var(--glass);-webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);
-  border:1px solid var(--stroke);box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.4)}
-.liquid-glass{background:rgba(255,255,255,.02);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
-  box-shadow:inset 0 1px 1px rgba(255,255,255,.12);position:relative;overflow:hidden}
-.liquid-glass::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.4px;pointer-events:none;
-  background:linear-gradient(to bottom,rgba(255,255,255,.5) 0%,rgba(255,255,255,.16) 20%,transparent 42%,transparent 58%,rgba(255,255,255,.16) 80%,rgba(255,255,255,.5) 100%);
-  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.lg-defs{position:absolute;width:0;height:0;overflow:hidden;pointer-events:none}
+
+/* ---- Liquid Glass core ---- */
+.glass{position:relative;isolation:isolate;background:var(--glass);
+  -webkit-backdrop-filter:blur(var(--lg-blur)) saturate(var(--lg-sat)) brightness(var(--lg-bright));
+  backdrop-filter:blur(var(--lg-blur)) saturate(var(--lg-sat)) brightness(var(--lg-bright));
+  border:1px solid var(--stroke);
+  box-shadow:var(--shadow), inset 0 1px 0 var(--lg-spec), inset 0 -1px 0 var(--lg-spec-b), inset 0 0 22px -10px var(--lg-inner)}
+/* refraction pass — dropped automatically by browsers that can't parse url() here */
+.glass{-webkit-backdrop-filter:blur(var(--lg-blur)) saturate(var(--lg-sat)) brightness(var(--lg-bright)) url(#lgRefract);
+  backdrop-filter:blur(var(--lg-blur)) saturate(var(--lg-sat)) brightness(var(--lg-bright)) url(#lgRefract)}
+/* specular rim: bright top-left → dark bottom-right, the hallmark of a glass bevel */
+.glass::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.2px;pointer-events:none;z-index:1;
+  background:linear-gradient(145deg,var(--lg-rim1) 0%,var(--lg-rim2) 28%,transparent 50%,transparent 62%,var(--lg-rim2) 84%,var(--lg-rim3) 100%);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude}
+/* soft interior gloss */
+.glass::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;
+  background:linear-gradient(160deg,var(--lg-gloss) 0%,transparent 42%)}
+
+.liquid-glass{position:relative;overflow:hidden;background:var(--lg-thin);
+  -webkit-backdrop-filter:blur(12px) saturate(170%) url(#lgRefractSoft);
+  backdrop-filter:blur(12px) saturate(170%) url(#lgRefractSoft);
+  box-shadow:inset 0 1px 0 var(--lg-spec), inset 0 -1px 0 var(--lg-spec-b), 0 8px 22px -14px rgba(20,30,60,.5)}
+.liquid-glass::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.2px;pointer-events:none;
+  background:linear-gradient(145deg,var(--lg-rim1) 0%,var(--lg-rim2) 30%,transparent 52%,transparent 64%,var(--lg-rim2) 86%,var(--lg-rim3) 100%);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude}
 .lg-edge{position:relative}
-.lg-edge::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.4px;pointer-events:none;
-  background:linear-gradient(to bottom,rgba(255,255,255,.6) 0%,rgba(255,255,255,.2) 22%,transparent 46%,transparent 56%,rgba(255,255,255,.2) 80%,rgba(255,255,255,.55) 100%);
-  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.lg-edge::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.3px;pointer-events:none;z-index:2;
+  background:linear-gradient(145deg,rgba(255,255,255,.85) 0%,rgba(255,255,255,.3) 30%,transparent 52%,transparent 64%,rgba(255,255,255,.26) 86%,rgba(255,255,255,.6) 100%);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude}
+/* glassy controls */
+.btn{position:relative;overflow:hidden}
+.btn::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,0) 55%)}
+.btn.ghost{-webkit-backdrop-filter:blur(14px) saturate(170%);backdrop-filter:blur(14px) saturate(170%)}
+.chip-btn,.pager button,.theme-switch,.sheet-x,.seg{-webkit-backdrop-filter:blur(14px) saturate(170%);backdrop-filter:blur(14px) saturate(170%)}
+.chip-btn,.pager button,.sheet-x{box-shadow:inset 0 1px 0 var(--lg-spec)}
+.nav-item.active,.seg button.on,.theme-switch button.on{position:relative;overflow:hidden}
+.nav-item.active::after,.seg button.on::after,.theme-switch button.on::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,0) 58%)}
+.hm{-webkit-backdrop-filter:blur(12px) saturate(160%) url(#lgRefractSoft);backdrop-filter:blur(12px) saturate(160%) url(#lgRefractSoft)}
+.hero{border:1px solid rgba(255,255,255,.28)}
+.status-pill,.seg,.filterbar,.panel,.tablecard,.sheet,.sidebar{border-radius:var(--r)}
+.sidebar{border-radius:26px}
+.sheet{border-radius:26px}
+.seg{border-radius:14px}
+.status-pill{border-radius:999px}
 .sheen{position:relative;overflow:hidden}
-.sheen::after{content:"";position:absolute;top:0;left:-60%;width:45%;height:100%;pointer-events:none;
+.sheen::after{content:"";position:absolute;top:0;left:-60%;right:auto;bottom:auto;width:45%;height:100%;z-index:2;pointer-events:none;
   background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);transform:skewX(-18deg);opacity:0;transition:opacity .2s}
 .sheen:hover::after{opacity:1;animation:sheen 1.1s ease}
 @keyframes sheen{from{left:-60%}to{left:120%}}
@@ -134,15 +181,15 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 .brandbig .blogo.plain{background:linear-gradient(140deg,var(--accent1),var(--accent2));color:#fff}
 .brandbig .blogo img{width:100%;height:100%;object-fit:contain;display:none}
 .wtitle{font-weight:700;white-space:nowrap;font-size:clamp(20px,3.4vw,36px);line-height:1.1;letter-spacing:.5px;
-  background:linear-gradient(90deg,#3aa0f0,#28c7e6,#4f74ff,#6366f1,#28c7e6,#3aa0f0);background-size:300% 100%;
-  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:flow 7s linear infinite}
-.wtitle span{display:inline-block;transition:transform .16s ease-out;will-change:transform;
-  background:linear-gradient(90deg,#3aa0f0,#28c7e6,#4f74ff,#6366f1,#28c7e6,#3aa0f0);background-size:300% 100%;
-  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:flow 7s linear infinite}
+  background:linear-gradient(92deg,#0aa8d8 0%,#2f6bff 52%,#6d4dff 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+:root[data-theme="dark"] .wtitle{background:linear-gradient(92deg,#4fe0ff 0%,#7aa0ff 52%,#b39bff 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+@media(prefers-color-scheme:dark){:root[data-theme="auto"] .wtitle{background:linear-gradient(92deg,#4fe0ff 0%,#7aa0ff 52%,#b39bff 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}}
 @supports not ((-webkit-background-clip:text) or (background-clip:text)){
-  .wtitle,.wtitle span{background:none;-webkit-text-fill-color:#4f74ff;color:#4f74ff}
+  .wtitle{background:none;-webkit-text-fill-color:#2f6bff;color:#2f6bff}
 }
-@keyframes flow{to{background-position:300% 0}}
 .status-pill{display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border-radius:999px;font-size:13px;color:var(--muted);font-weight:500;margin-left:auto}
 .status-pill.off{color:#e5484d}
 
@@ -273,6 +320,21 @@ tbody tr:hover{background:var(--row-hover)}
 <body>
 <canvas id="waterCanvas"></canvas>
 <div id="bgVeil"></div>
+
+<svg class="lg-defs" aria-hidden="true" focusable="false" width="0" height="0">
+  <defs>
+    <filter id="lgRefract" x="-12%" y="-12%" width="124%" height="124%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.008 0.014" numOctaves="2" seed="7" result="noise"/>
+      <feGaussianBlur in="noise" stdDeviation="1.6" result="softNoise"/>
+      <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="14" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="lgRefractSoft" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.011 0.018" numOctaves="2" seed="3" result="noise"/>
+      <feGaussianBlur in="noise" stdDeviation="1.2" result="softNoise"/>
+      <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="8" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
 
 <div class="app">
   <aside class="sidebar glass" id="sidebar">
@@ -536,9 +598,6 @@ function setHeroPalette(p){
   var W=0,H=0,dpr=Math.min(window.devicePixelRatio||1,1.5);
   function resize(){W=window.innerWidth;H=window.innerHeight;canvas.width=Math.floor(W*dpr);canvas.height=Math.floor(H*dpr);canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0);}
   window.addEventListener('resize',resize);resize();
-  var ripples=[];var lastRip=0;
-  window.addEventListener('mousemove',function(e){var now=performance.now();if(now-lastRip>60){lastRip=now;ripples.push({x:e.clientX,y:e.clientY,r:0,a:.5});if(ripples.length>26)ripples.shift();}});
-  window.addEventListener('touchmove',function(e){if(e.touches&&e.touches[0]){ripples.push({x:e.touches[0].clientX,y:e.touches[0].clientY,r:0,a:.45});if(ripples.length>26)ripples.shift();}},{passive:true});
   var hidden=false;document.addEventListener('visibilitychange',function(){hidden=document.hidden;});
   var lines=[{y:.18,amp:16,len:.006,sp:.6,w:1.6},{y:.34,amp:22,len:.005,sp:-.45,w:1.6},{y:.5,amp:18,len:.007,sp:.55,w:1.4},{y:.66,amp:26,len:.004,sp:-.5,w:1.6},{y:.82,amp:20,len:.006,sp:.4,w:1.4}];
   function draw(t){
@@ -553,33 +612,17 @@ function setHeroPalette(p){
       for(var x=0;x<=W;x+=10){var y=baseY+Math.sin(x*ln.len+t*ln.sp+i)*ln.amp+Math.sin(x*ln.len*2.3+t*ln.sp*1.4)*ln.amp*.35;ctx.lineTo(x,y);}
       ctx.lineTo(W,baseY+70);ctx.lineTo(0,baseY+70);ctx.closePath();
       var g=ctx.createLinearGradient(0,baseY-ln.amp,0,baseY+70);
-      g.addColorStop(0,pre+(dark?'.10)':'.12)'));g.addColorStop(1,pre+'0)');
+      g.addColorStop(0,pre+(dark?'.20)':'.24)'));g.addColorStop(1,pre+'0)');
       ctx.fillStyle=g;ctx.fill();
       ctx.beginPath();ctx.moveTo(0,baseY);
       for(var x2=0;x2<=W;x2+=10){var y2=baseY+Math.sin(x2*ln.len+t*ln.sp+i)*ln.amp+Math.sin(x2*ln.len*2.3+t*ln.sp*1.4)*ln.amp*.35;ctx.lineTo(x2,y2);}
-      ctx.strokeStyle=pre+(dark?'.16)':'.14)');ctx.lineWidth=ln.w;ctx.stroke();
+      ctx.strokeStyle=pre+(dark?'.32)':'.30)');ctx.lineWidth=ln.w+.3;ctx.stroke();
     }
-    for(var r=ripples.length-1;r>=0;r--){var rp=ripples[r];rp.r+=2.6;rp.a*=.955;if(rp.a<.02){ripples.splice(r,1);continue;}
-      ctx.beginPath();ctx.arc(rp.x,rp.y,rp.r,0,Math.PI*2);ctx.strokeStyle=pre+(rp.a*(dark?1.1:.9)).toFixed(3)+')';ctx.lineWidth=1.4;ctx.stroke();}
   }
   if(reduceMotion){draw(0);window.__redrawWater=function(){draw(0);};return;}
   var start=performance.now(),last=0;
   function loop(now){requestAnimationFrame(loop);if(hidden)return;if(now-last<33)return;last=now;draw((now-start)/1000);}
   requestAnimationFrame(loop);
-})();
-
-(function(){
-  var el=document.getElementById('wtitle');if(!el)return;
-  var text=el.textContent;el.textContent='';
-  var seg=null;try{seg=new Intl.Segmenter('th',{granularity:'grapheme'});}catch(e){seg=null;}
-  var parts=seg?Array.prototype.map.call(Array.from(seg.segment(text)),function(s){return s.segment;}):[text];
-  var spans=[];
-  for(var i=0;i<parts.length;i++){var sp=document.createElement('span');sp.textContent=parts[i];spans.push(sp);el.appendChild(sp);}
-  if(reduceMotion||parts.length<=1)return;
-  var R=130,mx=-9999,my=-9999,raf=null;
-  function upd(){raf=null;for(var i=0;i<spans.length;i++){var rc=spans[i].getBoundingClientRect();var cx=rc.left+rc.width/2,cy=rc.top+rc.height/2;var dx=cx-mx,dy=cy-my;var d=Math.sqrt(dx*dx+dy*dy);if(d<R){var f=1-d/R;spans[i].style.transform='translateY('+(-13*f)+'px) scale('+(1+.4*f)+')';}else{spans[i].style.transform='';}}}
-  window.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY;if(!raf)raf=requestAnimationFrame(upd);});
-  window.addEventListener('mouseout',function(e){if(!e.relatedTarget){mx=-9999;my=-9999;if(!raf)raf=requestAnimationFrame(upd);}});
 })();
 
 var DB_URL="https://water-monitoring2026-default-rtdb.asia-southeast1.firebasedatabase.app";
